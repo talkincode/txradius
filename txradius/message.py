@@ -78,15 +78,12 @@ class CoAMessage(CoAPacket):
     def __init__(self, code=CoARequest, id=None, secret=six.b(''),
             authenticator=None, **attributes):
         CoAPacket.__init__(self, code, id, secret, authenticator, **attributes)
-        self.deferred = Deferred()
-        self.source_user = None
-        self.vendor_id = 0
-        self.client_macaddr = None
-        self.created = datetime.datetime.now()
         
-
     def format_str(self):
         return format_packet_str(self)    
+
+    def format_log(self):
+        return format_packet_log(self)
 
 
 class AuthMessage(AuthPacket):
