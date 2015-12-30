@@ -83,14 +83,14 @@ class ExtAttrMixin:
         self._client_mac = None
         self.resp_attrs = {}
 
-    @vendor_id.setter
-    def vendor_id(self, vendor_id):
-        self._vendor_id = vendor_id
-
     @property
     def vendor_id(self):
         return self._vendor_id
 
+    @vendor_id.setter
+    def vendor_id(self, vendor_id):
+        self._vendor_id = vendor_id
+        
     @property
     def vlanid1(self):
         return self._vlanid1
@@ -118,6 +118,7 @@ class ExtAttrMixin:
     def get_vlanids(self):
         return self.get_vlanid1(),self.get_vlanid2()  
 
+    @property
     def created(self):
         return self._created
 
