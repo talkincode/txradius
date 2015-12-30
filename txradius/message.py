@@ -33,13 +33,6 @@ PacketStatusTypeMap = {
     45 : 'CoANAK',
 }
 
-EXT_VENDOR_ID = 'TR-VENDOR_ID'
-EXT_VLANID1 = "TR-VLANID1"
-EXT_VLANID2 = 'TR-VLANID2'
-EXT_CLIENT_MAC = 'TR-CLIENT-MAC'
-EXT_CREATED = 'TR-CREATED'
-
-
 def format_packet_str(pkt):
     attr_keys = pkt.keys()
     _str = "\nRadius Packet:%s"%PacketStatusTypeMap.get(pkt.code)
@@ -86,7 +79,11 @@ class ExtAttrMixin:
 
     def __init__(self, **attrs):
         self.ext_attrs.update(**attrs)
-        self.ext_attrs[EXT_CREATED] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self._created = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self._vendor_id = 0
+        self._vlanid1 = 0
+        self._vlanid2 = 0
+        self._client_mac = None
 
     def get_extattr(self, name, defval):
         return self.ext_attrs.get(name,defval)
@@ -94,27 +91,44 @@ class ExtAttrMixin:
     def set_extattr(self, name, value):
         self.ext_attrs[name] = value
 
-    def set_ext_vendor_id(vendor_id):
-        self.ext_attrs[EXT_VENDOR_ID] = vendor_id
+    @vendor_id.setter
+    def vendor_id(self, vendor_id):
+        self._vendor_id = vendor_id
 
-    def set_ext_vlanids(vlanid1, vlanid2):
-        self.ext_attrs[EXT_VLANID1] = vlanid1
-        self.ext_attrs[EXT_VLANID2] = vlanid2
+    @property
+    def vendor_id(self):
+        return self._vendor_id
 
-    def set_client_mac(macaddr):
-        self.ext_attrs[EXT_CLIENT_MAC] = macaddr
+    @property
+    def vlanid1(self):
+        return self._vlanid1
+
+    @vlanid1.setter
+    def vlanid1(self,vlanid1):
+        self._vlanid1 = vlanid1
+
+    @property
+    def vlanid2(self):
+        return _vlanid2
+
+    @vendor_id.setter
+    def vlanid2(self,vlanid2):
+        self._vlanid2 = vlanid2
+
+    @property
+    def client_mac(self):
+        return _client_mac
+
+    @vendor_id.setter
+    def client_mac(self,macaddr):
+        self._client_mac = macaddr
 
     def get_vlanids(self):
-        return self.get_extattr(EXT_VLANID1), self.get_extattr(EXT_VLANID2)    
+        return self.get_vlanid1(),self.get_vlanid2()  
 
-    def get_vlanid1(self):
-        return self.get_extattr(EXT_VLANID1)
+    def created(self):
+        return self._created
 
-    def get_vlanid2(self):
-        return self.get_extattr(EXT_VLANID2)
-
-    def get_vendor_id(self):
-        return self.get_extattr(EXT_VENDOR_ID)
 
 
 class CoAMessage(CoAPacket,ExtAttrMixin):
@@ -168,15 +182,6 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
         self['CHAP-Challenge'] = self.authenticator
         return '%s%s' % (chapid, md5_constructor("%s%s%s" % (chapid, password, self.authenticator)).digest())
 
-
-    def set_reply_msg(self,msg):
-        if msg:self.AddAttribute(18,msg)
-
-    def set_framed_ip_addr(self,ipaddr):
-        if ipaddr:self.AddAttribute(8,tools.EncodeAddress(ipaddr))
-
-    def set_session_timeout(self,timeout):
-        if timeout:self.AddAttribute(27,tools.EncodeInteger(timeout))
    
     def get_nas_addr(self):
         _nas_addr = None
@@ -186,7 +191,7 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
         
     def get_mac_addr(self):
         try:
-            return self.get_extattr(EXT_CLIENT_MAC,tools.DecodeString(self.get(31)[0]).replace("-",":")) 
+            return self.get_extattr(self.client_mac,tools.DecodeString(self.get(31)[0]).replace("-",":")) 
         except:return None
 
     def get_user_name(self):
@@ -348,7 +353,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
 
     def get_mac_addr(self):
         try:
-            return self.get_extattr(EXT_CLIENT_MAC,tools.DecodeString(self.get(31)[0]).replace("-",":")) 
+            return self.get_extattr(self.client_mac,tools.DecodeString(self.get(31)[0]).replace("-",":")) 
         except:return None
 
     def get_nas_addr(self):
