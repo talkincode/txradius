@@ -33,6 +33,13 @@ PacketStatusTypeMap = {
     45 : 'CoANAK',
 }
 
+EXT_VENDOR_ID = 'TR-VENDOR_ID'
+EXT_VLANID1 = "TR-VLANID1"
+EXT_VLANID2 = 'TR-VLANID2'
+EXT_CLIENT_MAC = 'TR-CLIENT-MAC'
+EXT_CREATED = 'TR-CREATED'
+
+
 def format_packet_str(pkt):
     attr_keys = pkt.keys()
     _str = "\nRadius Packet:%s"%PacketStatusTypeMap.get(pkt.code)
@@ -73,11 +80,35 @@ def format_packet_log(pkt):
     return _str
 
 
+class ExtAttrMixin:
 
-class CoAMessage(CoAPacket):
+    ext_attrs = {}
+
+    def __init__(self, **attrs):
+        self.ext_attrs.update(**attrs)
+        self.ext_attrs[EXT_CREATED] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def get_extattr(self, name, defval):
+        return self.ext_attrs.get(name,defval)
+
+    def set_extattr(self, name, value):
+        self.ext_attrs[name] = value
+
+    def set_ext_vendor(vendor_id):
+        self.ext_attrs[EXT_VENDOR_ID] = vendor_id
+
+    def set_ext_vlanids(vlanid1, vlanid2):
+        self.ext_attrs[EXT_VLANID1] = vlanid1
+        self.ext_attrs[EXT_VLANID2] = vlanid2
+
+    def set_ext_client_mac(macaddr):
+        self.ext_attrs[EXT_CLIENT_MAC] = macaddr
+
+class CoAMessage(CoAPacket,ExtAttrMixin):
     def __init__(self, code=CoARequest, id=None, secret=six.b(''),
             authenticator=None, **attributes):
         CoAPacket.__init__(self, code, id, secret, authenticator, **attributes)
+        ExtAttrMixin.__init__(self)
         
     def format_str(self):
         return format_packet_str(self)    
@@ -86,10 +117,11 @@ class CoAMessage(CoAPacket):
         return format_packet_log(self)
 
 
-class AuthMessage(AuthPacket):
+class AuthMessage(AuthPacket,ExtAttrMixin):
 
     def __init__(self, code=AccessRequest, id=None, secret=six.b(''), authenticator=None, **attributes):
         AuthPacket.__init__(self, code, id, secret, authenticator, **attributes)
+        ExtAttrMixin.__init__(self)
 
     def format_str(self):
         return format_packet_str(self)
@@ -140,8 +172,8 @@ class AuthMessage(AuthPacket):
         except:pass
         
     def get_mac_addr(self):
-        if self.client_macaddr:return self.client_macaddr
-        try:return tools.DecodeString(self.get(31)[0]).replace("-",":")
+        try:
+            return self.get_extattr(EXT_CLIENT_MAC,tools.DecodeString(self.get(31)[0]).replace("-",":")) 
         except:return None
 
     def get_user_name(self):
@@ -162,7 +194,7 @@ class AuthMessage(AuthPacket):
             return None            
         
     def get_vlanids(self):
-        return self.vlanid,self.vlanid2
+        return self.get_extattr(EXT_VLANID1), self.get_extattr(EXT_VLANID2)
 
     def get_passwd(self):
         try:return self.PwDecrypt(self.get(2)[0])
@@ -267,10 +299,11 @@ class AuthMessage(AuthPacket):
             return False
 
 
-class AcctMessage(AcctPacket):
+class AcctMessage(AcctPacket,ExtAttrMixin):
     def __init__(self, code=AccountingRequest, id=None, secret=six.b(''),
             authenticator=None, **attributes):
         AcctPacket.__init__(self, code, id, secret, authenticator, **attributes)
+        ExtAttrMixin.__init__(self)
 
     def format_str(self):
         return format_packet_str(self)
@@ -303,8 +336,8 @@ class AcctMessage(AcctPacket):
  
 
     def get_mac_addr(self):
-        if self.client_macaddr:return self.client_macaddr
-        try:return tools.DecodeString(self.get(31)[0]).replace("-",":")
+        try:
+            return self.get_extattr(EXT_CLIENT_MAC,tools.DecodeString(self.get(31)[0]).replace("-",":")) 
         except:return None
 
     def get_nas_addr(self):
@@ -382,9 +415,19 @@ class AcctMessage(AcctPacket):
         try:return tools.DecodeInteger(self.get(53)[0]) or 0
         except:return 0                                                         
 
-    def get_event_timestamp(self,timetype=0):
+    def get_event_timestamp(self):
         try:
             return tools.DecodeDate(self.get(55)[0])
+        except:
+            return None
+
+    def get_event_timestamp_str(self,timetype=0):
+        try:
+            _time = tools.DecodeDate(self.get(55)[0])
+            if timetype == 0:
+                return datetime.datetime.fromtimestamp(_time).strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                return datetime.datetime.fromtimestamp(_time-(8*3600)).strftime("%Y-%m-%d %H:%M:%S")
         except:
             return None
 
