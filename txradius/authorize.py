@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+#coding=utf-8
+
+from twisted.python import log
+from twisted.internet import protocol
+from twisted.internet import reactor, defer
+from toughengine.radiusd import utils
+import six
+from txradius.radius import packet
+from txradius.ext import ikuai
+from txradius import message
+
+
+class CoAClient(protocol.DatagramProtocol):
+    
+    def __init__(self, vendor_id, dictionary, nas_secret, nas_addr, coa_port=3799, debug=False):
+        self.dictionary = dictionary
+        self.secret = six.b(str(bas_secret))
+        self.addr = nas_addr
+        self.port = int(coa_port)
+        self.vendor_id = int(vendor_id)
+        self.debug=debug
+        self.uport = reactor.listenUDP(0, self)
+
+    def close(self):
+        self.transport = None
+        try:
+            self.uport.stopListening()
+        except:
+            pass
+
+    def onError(self, err):
+        log.err('Packet process error：%s' % str(err))
+
+    def onResult(self, resp):
+        reactor.callLater(0.01, self.close,)
+        return resp
+        
+    def sendDisconnect(self, **kwargs):
+        coa_req = message.CoAMessage(
+            code=packet.DisconnectRequest, dict=self.dictionary, secret=self.secret, **kwargs)   
+        username = coa_req["User-Name"][0]
+        if self.vendor_id == ikuai.VENDOR_ID:
+            pkg = ikuai.create_dm_pkg(self.secret, username)
+            if self.debug:
+                log.msg("send ikuai radius Coa Request [username:%s]: %s"%(username, repr(pkg)))
+            self.transport.write(pkg,(self.addr, self.port))
+        else:
+            if self.debug:
+                log.msg("send radius Coa Request [username:%s] : %s"%(username, coa_req))
+            self.transport.write(coa_req.RequestPacket(),(self.addr, self.port))
+        self.deferrd = defer.Deferred()
+        self.deferrd.addCallbacks(self.onResult,self.onError)
+        return self.deferrd
+
+    def datagramReceived(self, datagram, (host, port)):
+        try:
+            response = packet.Packet(packet=datagram)
+            if self.debug:
+                log.msg("Received Radius Response: %s" % (repr(response)))
+            self.deferrd.callback(response.code)
+        except Exception as err:
+            log.err('Invalid Response packet from %s: %s' % ((host, port), str(err)))
+            self.deferrd.errback(err)
+
+
+def disconnect(vendor_id, dictionary, nas_secret, nas_addr, coa_port=3799, debug=False, **kwargs):
+    return CoAClient(vendor_id, dictionary, nas_secret, nas_addr, coa_port, debug).sendDisconnect(**kwargs)
+
+
+

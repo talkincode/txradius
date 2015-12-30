@@ -67,7 +67,7 @@ class RadiusClient(protocol.DatagramProtocol):
             self.deferrd.callback(response)
         except Exception as err:
             log.err('Invalid Response packet from %s: %s' % ((host, port), str(err)))
-            self.deferrd.errback(response)
+            self.deferrd.errback(err)
 
 
 def send_auth(secret, dictionary, server, authport=1812, acctport=1813, debug=False, **kwargs):

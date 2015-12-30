@@ -395,5 +395,32 @@ class AcctMessage(AcctPacket):
     def get_nas_portid(self):
         try:return tools.DecodeString(self.get(87)[0])
         except:return None    
+
+    def get_ticket(self):
+        return dict(
+            account_number = self.get_user_name(),
+            mac_addr = self.get_mac_addr(),
+            nas_addr = self.get_nas_addr(),
+            nas_port = self.get_nas_port(),
+            service_type = self.get_service_type(),
+            framed_ipaddr = self.get_framed_ipaddr(),
+            framed_netmask = self.get_framed_netmask(),
+            nas_class = self.get_nas_class(),
+            session_timeout = self.get_session_timeout(),
+            calling_stationid = self.get_calling_stationid(),
+            acct_status_type = self.get_acct_status_type(),
+            acct_input_octets = self.get_acct_input_octets(),
+            acct_output_octets = self.get_acct_output_octets(),
+            acct_session_id = self.get_acct_sessionid(),
+            acct_session_time = self.get_acct_sessiontime(),
+            acct_input_packets = self.get_acct_input_packets(),
+            acct_output_packets = self.get_acct_output_packets(),
+            acct_terminate_cause = self.get_acct_terminate_cause(),
+            acct_input_gigawords = self.get_acct_input_gigawords(),
+            acct_output_gigawords = self.get_acct_output_gigawords(),
+            event_timestamp = self.get_event_timestamp(),
+            nas_port_type=self.get_nas_port_type(),
+            nas_port_id=self.get_nas_portid()
+        )
         
  
