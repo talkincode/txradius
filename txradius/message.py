@@ -55,7 +55,6 @@ def format_packet_str(pkt):
 def format_packet_log(pkt):
     attr_keys = pkt.keys()
     _str = "RadiusPacket:%s;" % PacketStatusTypeMap[pkt.code]
-    _str += "host:(%s,%s);" % pkt.source
     _str += "id:%s;" % pkt.id
     _str += "code:%s;" % pkt.code
     for attr in attr_keys:
@@ -90,7 +89,7 @@ class ExtAttrMixin:
     @vendor_id.setter
     def vendor_id(self, vendor_id):
         self._vendor_id = vendor_id
-        
+
     @property
     def vlanid1(self):
         return self._vlanid1
@@ -322,7 +321,6 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
 
     def __str__(self):
         _str = PacketStatusTypeMap.get(self.code)
-        _str += " host=%s:%s" % self.source
         _str += ",id=%s"%self.id
         if self.code == 4:
             _str += ",username=%s,mac_addr=%s" % (self.get_user_name(),self.get_mac_addr())
