@@ -94,15 +94,28 @@ class ExtAttrMixin:
     def set_extattr(self, name, value):
         self.ext_attrs[name] = value
 
-    def set_ext_vendor(vendor_id):
+    def set_ext_vendor_id(vendor_id):
         self.ext_attrs[EXT_VENDOR_ID] = vendor_id
 
     def set_ext_vlanids(vlanid1, vlanid2):
         self.ext_attrs[EXT_VLANID1] = vlanid1
         self.ext_attrs[EXT_VLANID2] = vlanid2
 
-    def set_ext_client_mac(macaddr):
+    def set_client_mac(macaddr):
         self.ext_attrs[EXT_CLIENT_MAC] = macaddr
+
+    def get_vlanids(self):
+        return self.get_extattr(EXT_VLANID1), self.get_extattr(EXT_VLANID2)    
+
+    def get_vlanid1(self):
+        return self.get_extattr(EXT_VLANID1)
+
+    def get_vlanid2(self):
+        return self.get_extattr(EXT_VLANID2)
+
+    def get_vendor_id(self):
+        return self.get_extattr(EXT_VENDOR_ID)
+
 
 class CoAMessage(CoAPacket,ExtAttrMixin):
     def __init__(self, code=CoARequest, id=None, secret=six.b(''),
@@ -193,8 +206,6 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
         except:
             return None            
         
-    def get_vlanids(self):
-        return self.get_extattr(EXT_VLANID1), self.get_extattr(EXT_VLANID2)
 
     def get_passwd(self):
         try:return self.PwDecrypt(self.get(2)[0])
