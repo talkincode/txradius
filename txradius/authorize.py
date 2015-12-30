@@ -5,7 +5,6 @@ import six
 from twisted.python import log
 from twisted.internet import protocol
 from twisted.internet import reactor, defer
-from toughengine.radiusd import utils
 from txradius.radius import packet
 from txradius.ext import ikuai
 from txradius import message

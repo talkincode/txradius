@@ -75,21 +75,13 @@ def format_packet_log(pkt):
 
 class ExtAttrMixin:
 
-    ext_attrs = {}
-
-    def __init__(self, **attrs):
-        self.ext_attrs.update(**attrs)
+    def __init__(self):
         self._created = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self._vendor_id = 0
         self._vlanid1 = 0
         self._vlanid2 = 0
         self._client_mac = None
-
-    def get_extattr(self, name, defval):
-        return self.ext_attrs.get(name,defval)
-
-    def set_extattr(self, name, value):
-        self.ext_attrs[name] = value
+        self.resp_attrs = {}
 
     @vendor_id.setter
     def vendor_id(self, vendor_id):
@@ -267,20 +259,20 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
                 authenticator_challenge,
                 _user_name
             )
-            self.ext_attrs['MS-CHAP2-Success'] = auth_resp
-            self.ext_attrs['MS-MPPE-Encryption-Policy'] = '\x00\x00\x00\x01'
-            self.ext_attrs['MS-MPPE-Encryption-Type'] = '\x00\x00\x00\x06'
+            self.resp_attrs['MS-CHAP2-Success'] = auth_resp
+            self.resp_attrs['MS-MPPE-Encryption-Policy'] = '\x00\x00\x00\x01'
+            self.resp_attrs['MS-MPPE-Encryption-Type'] = '\x00\x00\x00\x06'
             mppeSendKey, mppeRecvKey = mppe.mppe_chap2_gen_keys(userpwd, nt_response)
             send_key, recv_key = mppe.gen_radius_encrypt_keys(
                 mppeSendKey,
                 mppeRecvKey,
                 self.secret,
                 self.authenticator)
-            self.ext_attrs['MS-MPPE-Send-Key'] = send_key
-            self.ext_attrs['MS-MPPE-Recv-Key'] = recv_key
+            self.resp_attrs['MS-MPPE-Send-Key'] = send_key
+            self.resp_attrs['MS-MPPE-Recv-Key'] = recv_key
             return True
         else:
-            self.ext_attrs['Reply-Message'] = "E=691 R=1 C=%s V=3 M=<password error>" % ('\0' * 32)
+            self.resp_attrs['Reply-Message'] = "E=691 R=1 C=%s V=3 M=<password error>" % ('\0' * 32)
             return False
         
         
