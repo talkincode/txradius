@@ -62,7 +62,7 @@ class RadiusClient(protocol.DatagramProtocol):
 
     def datagramReceived(self, datagram, (host, port)):
         try:
-            response = packet.Packet(packet=datagram)
+            response = packet.Packet(packet=datagram,dict=self.dict, secret=self.secret))
             if self.debug:
                 log.msg("Received Radius Response: %s" % (message.format_packet_str(response)))
             self.deferrd.callback(response)
