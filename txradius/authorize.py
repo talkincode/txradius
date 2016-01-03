@@ -22,11 +22,9 @@ class CoAClient(protocol.DatagramProtocol):
         self.uport = reactor.listenUDP(0, self)
 
     def close(self):
-        self.transport = None
-        try:
-            self.uport.stopListening()
-        except:
-            pass
+        if self.transport is not None:
+            self.transport.stopListening()
+            self.transport = None
 
     def onError(self, err):
         log.err('Packet process error：%s' % str(err))

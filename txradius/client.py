@@ -21,8 +21,9 @@ class RadiusClient(protocol.DatagramProtocol):
         reactor.listenUDP(0, self)
 
     def close(self):
-        self.transport = None
-        self.port.stopListening()
+        if self.transport is not None:
+            self.transport.stopListening()
+            self.transport = None
 
     def onError(self, err):
         log.err('Packet process error：%s' % str(err))
