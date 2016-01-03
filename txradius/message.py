@@ -348,7 +348,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
 
     def get_mac_addr(self):
         try:
-            return self.get_extattr(self.client_mac,tools.DecodeString(self.get(31)[0]).replace("-",":")) 
+            return self.client_mac
         except:return None
 
     def get_nas_addr(self):
