@@ -473,7 +473,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
             framed_netmask = self.get_framed_netmask(),
             nas_class = self.get_nas_class(),
             session_timeout = self.get_session_timeout(),
-            calling_stationid = self.get_calling_stationid(),
+            calling_station_id = self.get_calling_stationid(),
             acct_status_type = self.get_acct_status_type(),
             acct_input_octets = self.get_acct_input_octets(),
             acct_output_octets = self.get_acct_output_octets(),
@@ -484,7 +484,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
             acct_terminate_cause = self.get_acct_terminate_cause(),
             acct_input_gigawords = self.get_acct_input_gigawords(),
             acct_output_gigawords = self.get_acct_output_gigawords(),
-            event_timestamp = self.get_event_timestamp(),
+            event_timestamp = self.get_event_timestamp_str(),
             nas_port_type=self.get_nas_port_type(),
             nas_port_id=self.get_nas_portid()
         )
