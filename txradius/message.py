@@ -76,6 +76,14 @@ def format_packet_log(pkt):
     return _str
 
 
+def get_session_timeout(pkt,defval=86400):
+    try:return tools.DecodeInteger(pkt.get(27)[0]) or defval
+    except:return defval
+
+def get_interim_update(pkt,defval=300):
+    try:return tools.DecodeInteger(pkt.get(85)[0]) or defval
+    except:return defval
+
 class ExtAttrMixin:
 
     def __init__(self):
@@ -215,14 +223,6 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
     def get_chappwd(self):
         try:return tools.DecodeOctets(self.get(3)[0])
         except:return None  
-
-    def get_session_timeout(self,defval=86400):
-        try:return tools.DecodeInteger(self.get(27)[0]) or defval
-        except:return defval
-
-    def get_interim_update(self,defval=300):
-        try:return tools.DecodeInteger(self.get(85)[0]) or defval
-        except:return defval
         
     def verifyChapEcrypt(self,userpwd):
         if isinstance(userpwd, six.text_type):
