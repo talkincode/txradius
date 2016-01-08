@@ -38,7 +38,7 @@ class RadiusClient(protocol.DatagramProtocol):
         CHAP_Challenge = kwargs.get("CHAP-Challenge")
         request = message.AuthMessage(dict=self.dict, secret=self.secret, **kwargs)
         if User_Password:
-            request['User-Password'] = request.PwCrypt2(User_Password)
+            request['User-Password'] = request.PwCrypt(User_Password)
         if CHAP_Password:
             if CHAP_Challenge: 
                 request['CHAP-Challenge'] = CHAP_Challenge

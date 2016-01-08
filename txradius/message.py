@@ -42,6 +42,7 @@ def format_packet_str(pkt):
     _str = "\nRadius Packet:%s"%PacketStatusTypeMap.get(pkt.code)
     _str += "\nid:%s" % pkt.id
     _str += "\ncode:%s" % pkt.code
+    _str += "\nauth:%s" % pkt.auth
     _str += "\nAttributes: "     
     for attr in attr_keys:
         try:
@@ -61,6 +62,7 @@ def format_packet_log(pkt):
     _str = "RadiusPacket:%s;" % PacketStatusTypeMap[pkt.code]
     _str += "id:%s;" % pkt.id
     _str += "code:%s;" % pkt.code
+    _str += "auth:%s" % pkt.auth
     for attr in attr_keys:
         try:
             _type = pkt.dict[attr].type
@@ -318,19 +320,8 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
             traceback.print_exc()
             return False
 
-    def PwDecrypt2(self, password):
-        """Unobfuscate a RADIUS password. RADIUS hides passwords in packets by
-        using an algorithm based on the MD5 hash of the packet authenticator
-        and RADIUS secret. This function reverses the obfuscation process.
-
-        :param password: obfuscated form of password
-        :type password:  binary string
-        :return:         plaintext password
-        :rtype:          unicode string
-        """
+    def PwDecrypt(self, password):
         buf = password
-        while buf.endswith(six.b('\x00')):
-            buf = buf[:-1]
         pw = six.b('')
 
         last = self.authenticator
@@ -346,20 +337,7 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
 
         return pw.decode('utf-8')
 
-    def PwCrypt2(self, password):
-        """Obfuscate password.
-        RADIUS hides passwords in packets by using an algorithm
-        based on the MD5 hash of the packet authenticator and RADIUS
-        secret. If no authenticator has been set before calling PwCrypt
-        one is created automatically. Changing the authenticator after
-        setting a password that has been encrypted using this function
-        will not work.
-
-        :param password: plaintext password
-        :type password:  unicode stringn
-        :return:         obfuscated version of the password
-        :rtype:          binary string
-        """
+    def PwCrypt(self, password):
         if self.authenticator is None:
             self.authenticator = self.CreateAuthenticator()
 
@@ -367,6 +345,9 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
             password = password.encode('utf-8')
 
         buf = password
+        if len(password) % 16 != 0:
+            buf += six.b('\x00') * (16 - (len(password) % 16))
+
         hash = md5_constructor(self.secret + self.authenticator).digest()
         result = six.b('')
 
@@ -378,9 +359,6 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
 
             last = result[-16:]
             buf = buf[16:]
-
-        if len(buf) % 16 != 0:
-            buf += six.b('\x00') * (16 - (len(buf) % 16))
 
         return result
 
