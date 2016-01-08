@@ -318,6 +318,77 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
             traceback.print_exc()
             return False
 
+    def PwDecrypt8(self, password):
+        """Unobfuscate a RADIUS password. RADIUS hides passwords in packets by
+        using an algorithm based on the MD5 hash of the packet authenticator
+        and RADIUS secret. This function reverses the obfuscation process.
+
+        :param password: obfuscated form of password
+        :type password:  binary string
+        :return:         plaintext password
+        :rtype:          unicode string
+        """
+        buf = password
+        pw = six.b('')
+
+        last = self.authenticator
+        while buf:
+            hash = md5_constructor(self.secret + last).digest()
+            for i in range(8):
+                pw += chr(ord(hash[i]) ^ ord(buf[i]))
+
+            (last, buf) = (buf[:8], buf[8:])
+
+        while pw.endswith(six.b('\x00')):
+            pw = pw[:-1]
+
+        return pw.decode('utf-8')
+
+    def PwCrypt8(self, password):
+        """Obfuscate password.
+        RADIUS hides passwords in packets by using an algorithm
+        based on the MD5 hash of the packet authenticator and RADIUS
+        secret. If no authenticator has been set before calling PwCrypt
+        one is created automatically. Changing the authenticator after
+        setting a password that has been encrypted using this function
+        will not work.
+
+        :param password: plaintext password
+        :type password:  unicode stringn
+        :return:         obfuscated version of the password
+        :rtype:          binary string
+        """
+        if self.authenticator is None:
+            self.authenticator = self.CreateAuthenticator()
+
+        if isinstance(password, six.text_type):
+            password = password.encode('utf-8')
+
+        buf = password
+        if len(password) % 8 != 0:
+            buf += six.b('\x00') * (8 - (len(password) % 8))
+
+        hash = md5_constructor(self.secret + self.authenticator).digest()
+        result = six.b('')
+
+        last = self.authenticator
+        while buf:
+            hash = md5_constructor(self.secret + last).digest()
+            if six.PY3:
+                for i in range(8):
+                    result += bytes((hash[i] ^ buf[i],))
+            else:
+                for i in range(8):
+                    result += chr(ord(hash[i]) ^ ord(buf[i]))
+
+            last = result[-8:]
+            buf = buf[8:]
+
+        return result
+
+
+
+
 
 class AcctMessage(AcctPacket,ExtAttrMixin):
     def __init__(self, code=AccountingRequest, id=None, secret=six.b(''),
