@@ -318,7 +318,7 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
             traceback.print_exc()
             return False
 
-    def PwDecrypt8(self, password):
+    def PwDecrypt2(self, password):
         """Unobfuscate a RADIUS password. RADIUS hides passwords in packets by
         using an algorithm based on the MD5 hash of the packet authenticator
         and RADIUS secret. This function reverses the obfuscation process.
@@ -329,22 +329,24 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
         :rtype:          unicode string
         """
         buf = password
+        while buf.endswith(six.b('\x00')):
+            buf = buf[:-1]
         pw = six.b('')
 
         last = self.authenticator
         while buf:
             hash = md5_constructor(self.secret + last).digest()
-            for i in range(8):
+            for i in range(16):
                 pw += chr(ord(hash[i]) ^ ord(buf[i]))
 
-            (last, buf) = (buf[:8], buf[8:])
+            (last, buf) = (buf[:16], buf[16:])
 
         while pw.endswith(six.b('\x00')):
             pw = pw[:-1]
 
         return pw.decode('utf-8')
 
-    def PwCrypt8(self, password):
+    def PwCrypt2(self, password):
         """Obfuscate password.
         RADIUS hides passwords in packets by using an algorithm
         based on the MD5 hash of the packet authenticator and RADIUS
@@ -365,20 +367,20 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
             password = password.encode('utf-8')
 
         buf = password
-        if len(password) % 8 != 0:
-            buf += six.b('\x00') * (8 - (len(password) % 8))
-
         hash = md5_constructor(self.secret + self.authenticator).digest()
         result = six.b('')
 
         last = self.authenticator
         while buf:
             hash = md5_constructor(self.secret + last).digest()
-            for i in range(8):
+            for i in range(16):
                 result += chr(ord(hash[i]) ^ ord(buf[i]))
 
-            last = result[-8:]
-            buf = buf[8:]
+            last = result[-16:]
+            buf = buf[16:]
+
+        if len(buf) % 16 != 0:
+            buf += six.b('\x00') * (16 - (len(buf) % 16))
 
         return result
 
