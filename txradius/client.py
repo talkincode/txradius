@@ -64,7 +64,7 @@ class RadiusClient(protocol.DatagramProtocol):
         try:
             response = packet.Packet(packet=datagram,dict=self.dict, secret=self.secret)
             if self.debug:
-                log.msg("Received Radius Response: %s" % (message.format_packet_str(response)))
+                log.msg("Received Radius Response from %s: %s" % ((host, port), message.format_packet_str(response)))
             self.deferrd.callback(response)
         except Exception as err:
             log.err('Invalid Response packet from %s: %s' % ((host, port), str(err)))
