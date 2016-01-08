@@ -42,7 +42,7 @@ def format_packet_str(pkt):
     _str = "\nRadius Packet:%s"%PacketStatusTypeMap.get(pkt.code)
     _str += "\nid:%s" % pkt.id
     _str += "\ncode:%s" % pkt.code
-    _str += "\nauth:%s" % pkt.auth
+    _str += "\nauth:%s" % pkt.authenticator
     _str += "\nAttributes: "     
     for attr in attr_keys:
         try:
@@ -62,7 +62,7 @@ def format_packet_log(pkt):
     _str = "RadiusPacket:%s;" % PacketStatusTypeMap[pkt.code]
     _str += "id:%s;" % pkt.id
     _str += "code:%s;" % pkt.code
-    _str += "auth:%s" % pkt.auth
+    _str += "auth:%s" % pkt.authenticator
     for attr in attr_keys:
         try:
             _type = pkt.dict[attr].type
