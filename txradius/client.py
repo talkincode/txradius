@@ -35,11 +35,10 @@ class RadiusClient(protocol.DatagramProtocol):
     def sendAuth(self, **kwargs):
         User_Password = kwargs.pop("User-Password",None)
         CHAP_Password = kwargs.pop("CHAP-Password",None)
-        pap_length = kwargs.pop("pap_length",16)
         CHAP_Challenge = kwargs.get("CHAP-Challenge")
         request = message.AuthMessage(dict=self.dict, secret=self.secret, **kwargs)
         if User_Password:
-            request['User-Password'] = request.PwCrypt(User_Password, pwdlen=pap_length)
+            request['User-Password'] = request.PwCrypt(User_Password.ljust(32,'\x00'))
         if CHAP_Password:
             if CHAP_Challenge: 
                 request['CHAP-Challenge'] = CHAP_Challenge

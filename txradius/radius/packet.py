@@ -401,7 +401,7 @@ class AuthPacket(Packet):
 
         return header + attr
 
-    def PwDecrypt(self, password, pwdlen=16):
+    def PwDecrypt(self, password):
         """Unobfuscate a RADIUS password. RADIUS hides passwords in packets by
         using an algorithm based on the MD5 hash of the packet authenticator
         and RADIUS secret. This function reverses the obfuscation process.
@@ -418,20 +418,20 @@ class AuthPacket(Packet):
         while buf:
             hash = md5_constructor(self.secret + last).digest()
             if six.PY3:
-                for i in range(pwdlen):
+                for i in range(16):
                     pw += bytes((hash[i] ^ buf[i],))
             else:
-                for i in range(pwdlen):
+                for i in range(16):
                     pw += chr(ord(hash[i]) ^ ord(buf[i]))
 
-            (last, buf) = (buf[:pwdlen], buf[pwdlen:])
+            (last, buf) = (buf[:16], buf[16:])
 
         while pw.endswith(six.b('\x00')):
             pw = pw[:-1]
 
         return pw.decode('utf-8')
 
-    def PwCrypt(self, password, pwdlen=16):
+    def PwCrypt(self, password):
         """Obfuscate password.
         RADIUS hides passwords in packets by using an algorithm
         based on the MD5 hash of the packet authenticator and RADIUS
@@ -452,8 +452,8 @@ class AuthPacket(Packet):
             password = password.encode('utf-8')
 
         buf = password
-        if len(password) % pwdlen != 0:
-            buf += six.b('\x00') * (pwdlen - (len(password) % pwdlen))
+        if len(password) % 16 != 0:
+            buf += six.b('\x00') * (16 - (len(password) % 16))
 
         hash = md5_constructor(self.secret + self.authenticator).digest()
         result = six.b('')
@@ -462,14 +462,14 @@ class AuthPacket(Packet):
         while buf:
             hash = md5_constructor(self.secret + last).digest()
             if six.PY3:
-                for i in range(pwdlen):
+                for i in range(16):
                     result += bytes((hash[i] ^ buf[i],))
             else:
-                for i in range(pwdlen):
+                for i in range(16):
                     result += chr(ord(hash[i]) ^ ord(buf[i]))
 
-            last = result[-pwdlen:]
-            buf = buf[pwdlen:]
+            last = result[-16:]
+            buf = buf[16:]
 
         return result
 
