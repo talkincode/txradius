@@ -374,12 +374,8 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
         last = self.authenticator
         while buf:
             hash = md5_constructor(self.secret + last).digest()
-            if six.PY3:
-                for i in range(8):
-                    result += bytes((hash[i] ^ buf[i],))
-            else:
-                for i in range(8):
-                    result += chr(ord(hash[i]) ^ ord(buf[i]))
+            for i in range(8):
+                result += chr(ord(hash[i]) ^ ord(buf[i]))
 
             last = result[-8:]
             buf = buf[8:]
