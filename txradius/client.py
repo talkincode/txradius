@@ -42,7 +42,7 @@ class RadiusClient(protocol.DatagramProtocol):
         if CHAP_Password:
             if CHAP_Challenge: 
                 request['CHAP-Challenge'] = CHAP_Challenge
-            request['CHAP-Password'] = request.ChapEcrypt(CHAP_Password)
+            request['CHAP-Password'] = CHAP_Password
 
         if self.debug:
             log.msg("Send radius Auth Request to (%s:%s): %s" % (self.server, self.authport, request.format_str()))
