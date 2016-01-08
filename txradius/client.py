@@ -45,7 +45,7 @@ class RadiusClient(protocol.DatagramProtocol):
             request['CHAP-Password'] = request.ChapEcrypt(CHAP_Password)
 
         if self.debug:
-            log.msg("Send radius Request: %s" % (request.format_str()))
+            log.msg("Send radius Auth Request to (%s:%s): %s" % (self.server, self.authport, request.format_str()))
         self.transport.write(request.RequestPacket(), (self.server, self.authport))
         self.deferrd = defer.Deferred()
         self.deferrd.addCallbacks(self.onResult,self.onError)
@@ -54,7 +54,7 @@ class RadiusClient(protocol.DatagramProtocol):
     def sendAcct(self, **kwargs):
         request = message.AcctMessage(dict=self.dict, secret=self.secret, **kwargs)
         if self.debug:
-            log.msg("Send radius Request: %s" % (request.format_str()))
+            log.msg("Send radius Acct Request to (%s:%s): %s" % (self.server, self.acctport, request.format_str()))
         self.transport.write(request.RequestPacket(), (self.server, self.acctport))
         self.deferrd = defer.Deferred()
         self.deferrd.addCallbacks(self.onResult,self.onError)
