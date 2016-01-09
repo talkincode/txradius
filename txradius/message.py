@@ -46,14 +46,9 @@ def format_packet_str(pkt):
     _str += "\nAttributes: "     
     for attr in attr_keys:
         try:
-            _type = pkt.dict[attr].type
-            if _type == 'octets':
-                _str += "\n\t%s: %s " % (attr, ",".join([ binascii.hexlify(_a) for _a in pkt[attr] ]))   
-            else:
-                _str += "\n\t%s: %s " % (attr, ",".join(pkt[attr]))   
+            _str += "\n\t%s: %s " % (attr, pkt[attr])   
         except:
-            try:_str += "\n\t%s: %s" % (attr, pkt[attr])
-            except:pass
+            pass
     return _str
 
 
@@ -65,16 +60,9 @@ def format_packet_log(pkt):
     _str += "auth:%s" % [pkt.authenticator]
     for attr in attr_keys:
         try:
-            _type = pkt.dict[attr].type
-            if _type == 'octets':
-                _str += "%s:%s;" % (attr, ",".join([binascii.hexlify(_a) for _a in pkt[attr]]))
-            else:
-                _str += "%s:%s;" % (attr, ",".join(pkt[attr]))
+            _str += "%s:%s;" % (attr, pkt[attr])
         except:
-            try:
-                _str += "%s:%s;" % (attr, pkt[attr])
-            except:
-                pass
+            pass
     return _str
 
 
