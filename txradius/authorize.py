@@ -14,7 +14,7 @@ class CoAClient(protocol.DatagramProtocol):
     
     def __init__(self, vendor_id, dictionary, nas_secret, nas_addr, coa_port=3799, debug=False):
         self.dictionary = dictionary
-        self.secret = six.b(str(bas_secret))
+        self.secret = six.b(str(nas_secret))
         self.addr = nas_addr
         self.port = int(coa_port)
         self.vendor_id = int(vendor_id)
