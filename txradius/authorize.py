@@ -32,8 +32,13 @@ class CoAClient(protocol.DatagramProtocol):
     def onResult(self, resp):
         reactor.callLater(0.01, self.close,)
         return resp
+
+    def onTimeout(self,deferred):
+        reactor.callLater(0.01, self.close,)
+        defer.timeout(deferred)
         
     def sendDisconnect(self, **kwargs):
+        timeout_sec = kwargs.pop('timeout',5) 
         coa_req = message.CoAMessage(
             code=packet.DisconnectRequest, dict=self.dictionary, secret=self.secret, **kwargs)   
         username = coa_req["User-Name"][0]
@@ -48,6 +53,7 @@ class CoAClient(protocol.DatagramProtocol):
             self.transport.write(coa_req.RequestPacket(),(self.addr, self.port))
         self.deferrd = defer.Deferred()
         self.deferrd.addCallbacks(self.onResult,self.onError)
+        self.deferrd.setTimeout(timeout_sec, timeout=self.onTimeout)
         return self.deferrd
 
     def datagramReceived(self, datagram, (host, port)):

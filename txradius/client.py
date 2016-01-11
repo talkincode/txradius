@@ -9,7 +9,6 @@ from txradius import message
 import six
 import time
 
-
 class RadiusClient(protocol.DatagramProtocol):
     def __init__(self, secret, dictionary, server, authport=1812, acctport=1813,  debug=False):
         self.dict = dictionary
@@ -32,7 +31,12 @@ class RadiusClient(protocol.DatagramProtocol):
         reactor.callLater(0.01, self.close,)
         return resp
 
+    def onTimeout(self,deferred):
+        reactor.callLater(0.01, self.close,)
+        defer.timeout(deferred)
+
     def sendAuth(self, **kwargs):
+        timeout_sec = kwargs.pop('timeout',5) 
         User_Password = kwargs.pop("User-Password",None)
         CHAP_Password = kwargs.pop("CHAP-Password",None)
         CHAP_Challenge = kwargs.get("CHAP-Challenge")
@@ -49,15 +53,18 @@ class RadiusClient(protocol.DatagramProtocol):
         self.transport.write(request.RequestPacket(), (self.server, self.authport))
         self.deferrd = defer.Deferred()
         self.deferrd.addCallbacks(self.onResult,self.onError)
+        self.deferrd.setTimeout(timeout_sec, timeout=self.onTimeout)
         return self.deferrd
 
     def sendAcct(self, **kwargs):
+        timeout_sec = kwargs.pop('timeout',5) 
         request = message.AcctMessage(dict=self.dict, secret=self.secret, **kwargs)
         if self.debug:
             log.msg("Send radius Acct Request to (%s:%s): %s" % (self.server, self.acctport, request.format_str()))
         self.transport.write(request.RequestPacket(), (self.server, self.acctport))
         self.deferrd = defer.Deferred()
         self.deferrd.addCallbacks(self.onResult,self.onError)
+        self.deferrd.setTimeout(timeout_sec, timeout=self.onTimeout)
         return self.deferrd
 
     def datagramReceived(self, datagram, (host, port)):
