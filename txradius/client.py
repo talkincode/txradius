@@ -26,6 +26,7 @@ class RadiusClient(protocol.DatagramProtocol):
 
     def onError(self, err):
         log.err('Packet process error：%s' % str(err))
+        reactor.callLater(0.01, self.close,)
 
     def onResult(self, resp):
         reactor.callLater(0.01, self.close,)
@@ -33,8 +34,6 @@ class RadiusClient(protocol.DatagramProtocol):
 
     def onTimeout(self):
         if not self.deferrd.called:
-            self.deferrd.cancel()
-            reactor.callLater(0.01, self.close,)
             defer.timeout(self.deferrd)
 
     def sendAuth(self, **kwargs):
