@@ -31,9 +31,11 @@ class RadiusClient(protocol.DatagramProtocol):
         reactor.callLater(0.01, self.close,)
         return resp
 
-    def onTimeout(self,deferred):
-        reactor.callLater(0.01, self.close,)
-        defer.timeout(deferred)
+    def onTimeout(self):
+        if not self.deferrd.called:
+            self.deferrd.cancel()
+            reactor.callLater(0.01, self.close,)
+            defer.timeout(self.deferrd)
 
     def sendAuth(self, **kwargs):
         timeout_sec = kwargs.pop('timeout',5) 
@@ -53,7 +55,7 @@ class RadiusClient(protocol.DatagramProtocol):
         self.transport.write(request.RequestPacket(), (self.server, self.authport))
         self.deferrd = defer.Deferred()
         self.deferrd.addCallbacks(self.onResult,self.onError)
-        self.deferrd.setTimeout(timeout_sec, timeout=self.onTimeout)
+        reactor.callLater(timeout_sec, self.onTimeout,)
         return self.deferrd
 
     def sendAcct(self, **kwargs):
@@ -64,7 +66,7 @@ class RadiusClient(protocol.DatagramProtocol):
         self.transport.write(request.RequestPacket(), (self.server, self.acctport))
         self.deferrd = defer.Deferred()
         self.deferrd.addCallbacks(self.onResult,self.onError)
-        self.deferrd.setTimeout(timeout_sec, timeout=self.onTimeout)
+        reactor.callLater(timeout_sec, self.onTimeout,)
         return self.deferrd
 
     def datagramReceived(self, datagram, (host, port)):
