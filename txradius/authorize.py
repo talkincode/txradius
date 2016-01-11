@@ -29,6 +29,7 @@ class CoAClient(protocol.DatagramProtocol):
     def onError(self, err):
         log.err('Packet process error：%s' % str(err))
         reactor.callLater(0.01, self.close,)
+        return err
 
     def onResult(self, resp):
         reactor.callLater(0.01, self.close,)
