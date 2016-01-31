@@ -21,8 +21,8 @@ class MessageStat(dict):
         self.acct_off = 0
         self.acct_retry = 0
         self.acct_drop = 0
-        self.auth_stat = deque([],15)
-        self.acct_stat = deque([],15)
+        self.auth_stat = deque([],60)
+        self.acct_stat = deque([],60)
 
     def incr(self, attr_name, incr=1):
         if hasattr(self, attr_name):
