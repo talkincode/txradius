@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 import time
+import datetime
 from collections import deque
 
 class MessageStat(dict):
@@ -23,6 +24,8 @@ class MessageStat(dict):
         self.acct_drop = 0
         self.auth_stat = deque([],60)
         self.acct_stat = deque([],60)
+        self.last_max = 0
+        self.last_max_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def incr(self, attr_name, incr=1):
         if hasattr(self, attr_name):
@@ -36,6 +39,10 @@ class MessageStat(dict):
         self.acct_all_old = self.acct_all
         self.auth_stat.append((_time,_auth_msg))
         self.acct_stat.append((_time,_acct_msg))
+        _percount = int((_auth_msg+_acct_msg+1)/15.0)
+        if self.last_max < _percount:
+            self.last_max = _percount
+            self.last_max_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def __getattr__(self, key): 
         try:
