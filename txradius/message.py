@@ -137,6 +137,18 @@ class CoAMessage(CoAPacket,ExtAttrMixin):
     def format_log(self):
         return format_packet_log(self)
 
+    def get_acct_sessionid(self):
+        try:return tools.DecodeString(self.get(44)[0])
+        except:pass    
+
+    def get_framed_ipaddr(self):
+        try:return tools.DecodeAddress(self.get(8)[0])
+        except:pass
+
+    def get_nas_addr(self):
+        try:
+            return tools.DecodeAddress(self.get(4)[0])
+        except:pass
 
 class AuthMessage(AuthPacket,ExtAttrMixin):
 
