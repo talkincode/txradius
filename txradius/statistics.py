@@ -8,24 +8,31 @@ class MessageStat(dict):
 
     def __init__(self):
         self.online = 0
-        self.auth_all = 0
-        self.auth_all_old = 0
+        self.auth_req_old = 0
+        self.auth_resp_old = 0
+        self.auth_req = 0
         self.auth_accept = 0
         self.auth_reject = 0
         self.auth_drop = 0
-        self.acct_all = 0
-        self.acct_all_old = 0
         self.acct_start = 0
         self.acct_stop = 0
         self.acct_update = 0
         self.acct_on = 0
         self.acct_off = 0
+        self.acct_req_old = 0
+        self.acct_resp_old = 0
+        self.acct_req = 0
+        self.acct_resp = 0
         self.acct_retry = 0
         self.acct_drop = 0
-        self.auth_stat = deque([],60)
-        self.acct_stat = deque([],60)
-        self.last_max = 0
-        self.last_max_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.auth_req_stat = deque([],90)
+        self.auth_resp_stat = deque([],90)
+        self.acct_req_stat = deque([],90)
+        self.acct_resp_stat = deque([],90)
+        self.last_max_req = 0
+        self.last_max_req_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.last_max_resp = 0
+        self.last_max_resp_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def incr(self, attr_name, incr=1):
         if hasattr(self, attr_name):
@@ -33,16 +40,32 @@ class MessageStat(dict):
         
     def run_stat(self):
         _time = time.time()*1000
-        _auth_msg = self.auth_all - self.auth_all_old
-        self.auth_all_old = self.auth_all
-        _acct_msg = self.acct_all - self.acct_all_old
-        self.acct_all_old = self.acct_all
-        self.auth_stat.append((_time,_auth_msg))
-        self.acct_stat.append((_time,_acct_msg))
-        _percount = int((_auth_msg+_acct_msg+1)/15.0)
-        if self.last_max < _percount:
-            self.last_max = _percount
-            self.last_max_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        _auth_req_stat = self.auth_req - self.auth_req_old
+        self.auth_req_old = self.auth_req
+
+        _auth_resp_stat = (self.auth_accept+auth_reject) - self.auth_resp_old
+        self.auth_resp_old =  (self.auth_accept+auth_reject) 
+
+        _acct_req_stat = self.acct_req - self.acct_req_old
+        self.acct_req_old = self.acct_req
+
+        _acct_resp_stat = self.acct_resp - self.acct_resp_old
+        self.acct_resp_old = self.acct_resp
+
+        self.auth_req_stat.append((_time,_auth_req_stat))
+        self.auth_resp_stat.append((_time,_auth_resp_stat))
+        self.acct_req_stat.append((_time,_acct_req_stat))
+        self.acct_resp_stat.append((_time,_acct_resp_stat))
+
+        req_percount = int((_auth_req_stat+_acct_req_stat+1)/10.0)
+        if self.last_max_req < req_percount:
+            self.last_max_req = req_percount
+            self.last_max_req_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        resp_percount = int((_auth_resp_stat+_acct_resp_stat+1)/10.0)
+        if self.last_max_resp < resp_percount:
+            self.last_max_resp = resp_percount
+            self.last_max_resp_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     def __getattr__(self, key): 
         try:
