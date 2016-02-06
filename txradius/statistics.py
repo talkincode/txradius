@@ -43,8 +43,8 @@ class MessageStat(dict):
         _auth_req_stat = self.auth_req - self.auth_req_old
         self.auth_req_old = self.auth_req
 
-        _auth_resp_stat = (self.auth_accept+auth_reject) - self.auth_resp_old
-        self.auth_resp_old =  (self.auth_accept+auth_reject) 
+        _auth_resp_stat = (self.auth_accept+self.auth_reject) - self.auth_resp_old
+        self.auth_resp_old =  (self.auth_accept+self.auth_reject) 
 
         _acct_req_stat = self.acct_req - self.acct_req_old
         self.acct_req_old = self.acct_req
