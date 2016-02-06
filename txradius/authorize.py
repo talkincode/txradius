@@ -47,11 +47,13 @@ class CoAClient(protocol.DatagramProtocol):
         if self.vendor_id == ikuai.VENDOR_ID:
             pkg = ikuai.create_dm_pkg(self.secret, username)
             if self.debug:
-                log.msg("send ikuai radius Coa Request [username:%s]: %s"%(username, repr(pkg)))
+                log.msg("send ikuai radius Coa Request to (%s:%s) [username:%s]: %s"%(
+                    self.addr, self.port, username, repr(pkg)))
             self.transport.write(pkg,(self.addr, self.port))
         else:
             if self.debug:
-                log.msg("send radius Coa Request [username:%s] : %s"%(username, coa_req))
+                log.msg("send radius Coa Request to (%s:%s) [username:%s] : %s"%(
+                    self.addr, self.port, username, coa_req))
             self.transport.write(coa_req.RequestPacket(),(self.addr, self.port))
         self.deferrd = defer.Deferred()
         self.deferrd.addCallbacks(self.onResult,self.onError)
@@ -62,7 +64,7 @@ class CoAClient(protocol.DatagramProtocol):
         try:
             response = packet.Packet(packet=datagram)
             if self.debug:
-                log.msg("Received Radius Response: %s" % (repr(response)))
+                log.msg("Received Radius Response from (%s:%s): %s" % (host, port, repr(response)))
             self.deferrd.callback(response.code)
         except Exception as err:
             log.err('Invalid Response packet from %s: %s' % ((host, port), str(err)))
