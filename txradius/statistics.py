@@ -57,12 +57,12 @@ class MessageStat(dict):
         self.acct_req_stat.append((_time,_acct_req_stat))
         self.acct_resp_stat.append((_time,_acct_resp_stat))
 
-        req_percount = int((_auth_req_stat+_acct_req_stat+1)/10.0)
+        req_percount = int((_auth_req_stat+_acct_req_stat)/10.0)
         if self.last_max_req < req_percount:
             self.last_max_req = req_percount
             self.last_max_req_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        resp_percount = int((_auth_resp_stat+_acct_resp_stat+1)/10.0)
+        resp_percount = int((_auth_resp_stat+_acct_resp_stat)/10.0)
         if self.last_max_resp < resp_percount:
             self.last_max_resp = resp_percount
             self.last_max_resp_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
