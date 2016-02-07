@@ -38,7 +38,7 @@ class RadiusClient(protocol.DatagramProtocol):
             defer.timeout(self.deferrd)
 
     def sendAuth(self, **kwargs):
-        timeout_sec = kwargs.pop('timeout',5) 
+        timeout_sec = kwargs.pop('timeout',10) 
         User_Password = kwargs.pop("User-Password",None)
         CHAP_Password = kwargs.pop("CHAP-Password",None)
         CHAP_Challenge = kwargs.get("CHAP-Challenge")
@@ -59,7 +59,7 @@ class RadiusClient(protocol.DatagramProtocol):
         return self.deferrd
 
     def sendAcct(self, **kwargs):
-        timeout_sec = kwargs.pop('timeout',5) 
+        timeout_sec = kwargs.pop('timeout',10) 
         request = message.AcctMessage(dict=self.dict, secret=self.secret, **kwargs)
         if self.debug:
             log.msg("Send radius Acct Request to (%s:%s): %s" % (self.server, self.acctport, request.format_str()))
