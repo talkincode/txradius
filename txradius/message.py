@@ -110,7 +110,7 @@ class ExtAttrMixin:
 
     @property
     def client_mac(self):
-        return _client_mac
+        return self._client_mac
 
     @client_mac.setter
     def client_mac(self,macaddr):
