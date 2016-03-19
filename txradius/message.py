@@ -102,7 +102,7 @@ class ExtAttrMixin:
 
     @property
     def vlanid2(self):
-        return _vlanid2
+        return self._vlanid2
 
     @vlanid2.setter
     def vlanid2(self,vlanid2):
