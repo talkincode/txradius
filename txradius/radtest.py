@@ -30,7 +30,9 @@ def cli():
 @click.option('-p','--password', default='888888',help="test auth password")
 @click.option('-s','--secret', default='secret',help="radius secret")
 @click.option('-e','--encrypt-type', default='pap',type=click.Choice(['pap','chap']))
-def auth(host,port,username,password,secret,encrypt_type):
+@click.option('--nas-ip', default='10.0.0.1')
+@click.option('--user-ip', default='10.0.0.100')
+def auth(host,port,username,password,secret,encrypt_type,nas_ip,user_ip):
     """ radius auth testing """
     _dict =dictionary.Dictionary(os.path.join(os.path.dirname(client.__file__), "dictionary/dictionary"))
     req = {'User-Name':username}
@@ -40,13 +42,14 @@ def auth(host,port,username,password,secret,encrypt_type):
         req['CHAP-Challenge'] = '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         req['CHAP-Password'] = password
 
-    req["NAS-IP-Address"]     = "10.10.10.1"
+    req["NAS-IP-Address"]     = nas_ip
+    req["NAS-Port-Id"]     = '3/0/1:0.0'
     req["NAS-Port"]           = 0
     req["Service-Type"]       = "Login-User"
     req["NAS-Identifier"]     = "trtest"
     req["Called-Station-Id"]  = random_mac()
     req["Calling-Station-Id"] = random_mac()
-    req["Framed-IP-Address"]  = "10.0.0.%s"% random.randint(2,254)
+    req["Framed-IP-Address"]  = user_ip
     print "radius auth: ",repr(req)
     def onresp(r):
         print message.format_packet_str(r)
@@ -63,21 +66,27 @@ def auth(host,port,username,password,secret,encrypt_type):
 @click.option('-t','--acct-type', default='start',type=click.Choice(ACCT_TYPES),help="radius acct type")
 @click.option('-u','--username', default='test01',help="test acct username")
 @click.option('-s','--secret', default='secret',help="radius secret")
-def acct(host,port,acct_type,username,secret):
+@click.option('--session-id', default='session-00001')
+@click.option('--nas-ip', default='10.0.0.1')
+@click.option('--user-ip', default='10.0.0.100')
+def acct(host,port,acct_type,username,secret,
+    session_id,nas_ip,user_ip):
     """ radius acct testing """
     _dict =dictionary.Dictionary(os.path.join(os.path.dirname(client.__file__), "dictionary/dictionary"))
     req = {'User-Name':username}
     req['Acct-Status-Type'] = ACCT_TYPE_MAP[acct_type]
+    req['Acct-Session-Id'] = session_id
     req["Acct-Output-Octets"]  =  random.randint(10240, 8192000)
     req["Acct-Input-Octets"]  =  random.randint(10240, 819200)
     req['Acct-Session-Time'] = random.randint(300, 3600)
-    req["NAS-IP-Address"]     = "10.10.10.1"
+    req["NAS-IP-Address"]     = nas_ip
+    req["NAS-Port-Id"]     = '3/0/1:0.0'
     req["NAS-Port"]           = 0
     req["Service-Type"]       = "Login-User"
     req["NAS-Identifier"]     = "trtest"
     req["Called-Station-Id"]  = random_mac()
     req["Calling-Station-Id"] = random_mac()
-    req["Framed-IP-Address"]  = "10.0.0.%s"% random.randint(2,254)
+    req["Framed-IP-Address"]  = user_ip
     print "radius acct: ",repr(req)
     def onresp(r):
         print message.format_packet_str(r)
