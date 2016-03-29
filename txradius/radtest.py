@@ -7,16 +7,10 @@ from twisted.internet import reactor, defer
 from twisted.python import log
 import functools
 import click
-import json
 import random
 
-
-
-# def send_auth(secret, dictionary, server, authport=1812, acctport=1813, debug=False, **kwargs):
-#     return RadiusClient(secret, dictionary, server, authport, acctport, debug).sendAuth(**kwargs)
-
-# def send_acct(secret, dictionary, server, authport=1812, acctport=1813, debug=False, **kwargs):
-#     return RadiusClient(secret, dictionary, server, authport, acctport, debug).sendAcct(**kwargs)
+ACCT_TYPES = ['start','stop','update','bason','basoff']
+ACCT_TYPE_MAP = {'start':1,'stop':2,'update':3,'bason':7,'basoff':8}
 
 def random_mac():
     mac = [ 0x52, 0x54, 0x00,
@@ -46,13 +40,13 @@ def auth(host,port,username,password,secret,encrypt_type):
         req['CHAP-Challenge'] = '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
         req['CHAP-Password'] = password
 
-    req["NAS-IP-Address"]     = "192.168.1.10"
+    req["NAS-IP-Address"]     = "10.10.10.1"
     req["NAS-Port"]           = 0
     req["Service-Type"]       = "Login-User"
     req["NAS-Identifier"]     = "trtest"
     req["Called-Station-Id"]  = random_mac()
     req["Calling-Station-Id"] = random_mac()
-    req["Framed-IP-Address"]  = "10.0.0.100"
+    req["Framed-IP-Address"]  = "10.0.0.%s"% random.randint(2,254)
     print "radius auth: ",repr(req)
     def onresp(r):
         print message.format_packet_str(r)
@@ -62,7 +56,40 @@ def auth(host,port,username,password,secret,encrypt_type):
     reactor.callLater(0.01, sendauth)
     reactor.run()
 
+
+@click.command()
+@click.option('-h','--host', default='127.0.0.1',help="radius host")
+@click.option('-p','--port', default=1813,help="radius acct port")
+@click.option('-t','--acct-type', default='start',type=click.Choice(ACCT_TYPES),help="radius acct type")
+@click.option('-u','--username', default='test01',help="test acct username")
+@click.option('-s','--secret', default='secret',help="radius secret")
+def acct(host,port,acct_type,username,secret):
+    """ radius acct testing """
+    _dict =dictionary.Dictionary(os.path.join(os.path.dirname(client.__file__), "dictionary/dictionary"))
+    req = {'User-Name':username}
+    req['Acct-Status-Type'] = ACCT_TYPE_MAP[acct_type]
+    req["Acct-Output-Octets"]  +=  random.randint(10240, 8192000)
+    req["Acct-Input-Octets"]  +=  random.randint(10240, 819200)
+    req['Acct-Session-Time'] = random.randint(300, 3600)
+    req["NAS-IP-Address"]     = "10.10.10.1"
+    req["NAS-Port"]           = 0
+    req["Service-Type"]       = "Login-User"
+    req["NAS-Identifier"]     = "trtest"
+    req["Called-Station-Id"]  = random_mac()
+    req["Calling-Station-Id"] = random_mac()
+    req["Framed-IP-Address"]  = "10.0.0.%s"% random.randint(2,254)
+    print "radius acct: ",repr(req)
+    def onresp(r):
+        print message.format_packet_str(r)
+        reactor.stop()
+
+    sendacct = lambda : client.send_acct(str(secret), _dict, host, acctport=port, debug=True,**req).addCallback(onresp)
+    reactor.callLater(0.01, sendacct)
+    reactor.run()
+
+
 cli.add_command(auth)
+cli.add_command(acct)
 
 
 if __name__ == '__main__':
