@@ -8,6 +8,7 @@ from twisted.python import log
 import functools
 import click
 import random
+import time
 
 ACCT_TYPES = ['start','stop','update','bason','basoff']
 ACCT_TYPE_MAP = {'start':1,'stop':2,'update':3,'bason':7,'basoff':8}
@@ -76,9 +77,9 @@ def acct(host,port,acct_type,username,secret,
     req = {'User-Name':username}
     req['Acct-Status-Type'] = ACCT_TYPE_MAP[acct_type]
     req['Acct-Session-Id'] = session_id
-    req["Acct-Output-Octets"]  =  random.randint(10240, 8192000)
-    req["Acct-Input-Octets"]  =  random.randint(10240, 819200)
-    req['Acct-Session-Time'] = random.randint(300, 3600)
+    req["Acct-Output-Octets"]  =  4096
+    req["Acct-Input-Octets"]  =  1024 
+    req['Acct-Session-Time'] = int(time.time())%1999
     req["NAS-IP-Address"]     = nas_ip
     req["NAS-Port-Id"]     = '3/0/1:0.0'
     req["NAS-Port"]           = 0
