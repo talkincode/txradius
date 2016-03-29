@@ -8,11 +8,16 @@ version = txradius.__version__
 
 install_requires = [
     'six>=1.8.0',
-    'Twisted>=13.0.0'
+    'Twisted>=15.0.0',
+    'Click'
 ]
 install_requires_empty = []
 
-package_data={}
+package_data={
+    'txradius': [
+        'dictionary/*'
+    ]
+}
 
 
 setup(name='txradius',
@@ -36,5 +41,11 @@ setup(name='txradius',
       keywords=['radius', 'AAA','authentication','accounting','authorization','toughradius'],
       zip_safe=True,
       include_package_data=True,
+      eager_resources=['txradius'],
       install_requires=install_requires,
+      entry_points={
+          'console_scripts': [
+              'radtest = txradius.radtest:cli'
+          ]
+      }
 )
