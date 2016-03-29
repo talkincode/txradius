@@ -102,17 +102,17 @@ class ExtAttrMixin:
 
     @property
     def vlanid2(self):
-        return _vlanid2
+        return self._vlanid2
 
-    @vendor_id.setter
+    @vlanid2.setter
     def vlanid2(self,vlanid2):
         self._vlanid2 = vlanid2
 
     @property
     def client_mac(self):
-        return _client_mac
+        return self._client_mac
 
-    @vendor_id.setter
+    @client_mac.setter
     def client_mac(self,macaddr):
         self._client_mac = macaddr
 
