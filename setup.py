@@ -27,7 +27,7 @@ setup(name='txradius',
       url='https://github.com/talkincode/txradius',
       license='GPL',
       description='RADIUS tools',
-      long_description="radius tools based twisted",
+      long_description=open('README.md').read(),
       classifiers=[
        'Development Status :: 6 - Mature',
        'Intended Audience :: Developers',
