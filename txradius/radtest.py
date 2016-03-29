@@ -68,8 +68,8 @@ def acct(host,port,acct_type,username,secret):
     _dict =dictionary.Dictionary(os.path.join(os.path.dirname(client.__file__), "dictionary/dictionary"))
     req = {'User-Name':username}
     req['Acct-Status-Type'] = ACCT_TYPE_MAP[acct_type]
-    req["Acct-Output-Octets"]  +=  random.randint(10240, 8192000)
-    req["Acct-Input-Octets"]  +=  random.randint(10240, 819200)
+    req["Acct-Output-Octets"]  =  random.randint(10240, 8192000)
+    req["Acct-Input-Octets"]  =  random.randint(10240, 819200)
     req['Acct-Session-Time'] = random.randint(300, 3600)
     req["NAS-IP-Address"]     = "10.10.10.1"
     req["NAS-Port"]           = 0
