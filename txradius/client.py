@@ -41,6 +41,7 @@ class RadiusClient(protocol.DatagramProtocol):
         timeout_sec = kwargs.pop('timeout',10) 
         User_Password = kwargs.pop("User-Password",None)
         CHAP_Password = kwargs.pop("CHAP-Password",None)
+        CHAP_Password_Plaintext = kwargs.pop("CHAP-Password-Plaintext",None)
         CHAP_Challenge = kwargs.get("CHAP-Challenge")
         request = message.AuthMessage(dict=self.dict, secret=self.secret, **kwargs)
         if User_Password:
@@ -49,6 +50,8 @@ class RadiusClient(protocol.DatagramProtocol):
             if CHAP_Challenge: 
                 request['CHAP-Challenge'] = CHAP_Challenge
             request['CHAP-Password'] = CHAP_Password
+        if CHAP_Password_Plaintext:
+            request['CHAP_Password'] = request.ChapEcrypt(CHAP_Password_Plaintext)
 
         if self.debug:
             log.msg("Send radius Auth Request to (%s:%s): %s" % (self.server, self.authport, request.format_str()))

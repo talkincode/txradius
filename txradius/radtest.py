@@ -44,7 +44,7 @@ def auth(host,port,username,password,secret,encrypt_type):
         req['User-Password'] = password
     else:
         req['CHAP-Challenge'] = '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-        req['CHAP-Password'] = password
+        req['CHAP-Password-Plaintext'] = password
 
     req["NAS-IP-Address"]     = "192.168.1.10"
     req["NAS-Port"]           = 0
