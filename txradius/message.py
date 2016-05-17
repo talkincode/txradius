@@ -55,12 +55,12 @@ def format_packet_str(pkt):
 def format_packet_log(pkt):
     attr_keys = pkt.keys()
     _str = "RadiusPacket:%s;" % PacketStatusTypeMap[pkt.code]
-    _str += "id:%s;" % pkt.id
-    _str += "code:%s;" % pkt.code
-    _str += "auth:%s" % [pkt.authenticator]
+    _str += "id:%s; " % pkt.id
+    _str += "code:%s; " % pkt.code
+    _str += "auth:%s； " % [pkt.authenticator]
     for attr in attr_keys:
         try:
-            _str += "%s:%s;" % (attr, pkt[attr])
+            _str += "%s:%s; " % (attr, pkt[attr])
         except:
             pass
     return _str
