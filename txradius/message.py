@@ -189,8 +189,12 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
         return '%s%s' % (chapid, md5_constructor("%s%s%s" % (chapid, password, self.authenticator)).digest())
 
    
+    def get_nas_id(self):
+        try:
+            return tools.DecodeString(self.get(32)[0])
+        except:pass
+           
     def get_nas_addr(self):
-        _nas_addr = None
         try:
             return tools.DecodeAddress(self.get(4)[0])
         except:pass
@@ -203,8 +207,6 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
     def get_user_name(self):
         try:
             user_name = tools.DecodeString(self.get(1)[0])
-            if "@" in user_name:
-                user_name = user_name[:user_name.index("@")]
             return user_name
         except:
             return None
@@ -406,8 +408,13 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
             return self.client_mac
         except:return None
 
+   
+    def get_nas_id(self):
+        try:
+            return tools.DecodeString(self.get(32)[0])
+        except:pass
+
     def get_nas_addr(self):
-        _nas_addr = None
         try:
             return tools.DecodeAddress(self.get(4)[0])
         except:pass
