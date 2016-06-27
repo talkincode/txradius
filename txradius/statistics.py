@@ -53,17 +53,9 @@ class MessageStat(dict):
         self.acct_resp_old = self.acct_resp
 
         self.auth_req_stat.append((_time,_auth_req_stat))
-        if len(self.auth_req_stat) > 90:
-            self.auth_req_stat.popleft()
         self.auth_resp_stat.append((_time,_auth_resp_stat))
-        if len(self.auth_resp_stat) > 90:
-            self.auth_resp_stat.popleft()
         self.acct_req_stat.append((_time,_acct_req_stat))
-        if len(self.acct_req_stat) > 90:
-            self.acct_req_stat.popleft()        
         self.acct_resp_stat.append((_time,_acct_resp_stat))
-        if len(self.acct_resp_stat) > 90:
-            self.acct_resp_stat.popleft()        
 
         req_percount = int((_auth_req_stat+_acct_req_stat)/10.0)
         if self.last_max_req < req_percount:
