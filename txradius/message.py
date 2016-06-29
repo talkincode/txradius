@@ -193,6 +193,10 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
         try:
             return tools.DecodeString(self.get(32)[0])
         except:pass
+
+    def get_nas_portid(self):
+        try:return tools.DecodeString(self.get(87)[0])
+        except:return ''           
            
     def get_nas_addr(self):
         try:
@@ -406,18 +410,18 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
     def get_mac_addr(self):
         try:
             return self.client_mac
-        except:return None
+        except:return ''
 
    
     def get_nas_id(self):
         try:
             return tools.DecodeString(self.get(32)[0])
-        except:pass
+        except:return ''
 
     def get_nas_addr(self):
         try:
             return tools.DecodeAddress(self.get(4)[0])
-        except:pass
+        except:return ''
 
 
     def get_nas_port(self):
@@ -430,15 +434,15 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
         
     def get_framed_ipaddr(self):
         try:return tools.DecodeAddress(self.get(8)[0])
-        except:return None
+        except:return ''
 
     def get_framed_netmask(self):
         try:return tools.DecodeAddress(self.get(9)[0])
-        except:return None
+        except:return ''
 
     def get_nas_class(self):
         try:return tools.DecodeString(self.get(25)[0])
-        except:return None   
+        except:return ''   
 
     def get_session_timeout(self):
         try:return tools.DecodeInteger(self.get(27)[0]) or 0
@@ -446,11 +450,11 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
 
     def get_calling_stationid(self):
         try:return tools.DecodeString(self.get(31)[0])
-        except:return None   
+        except:return ''   
 
     def get_acct_status_type(self):
         try:return tools.DecodeInteger(self.get(40)[0])
-        except:return None
+        except:return 0
 
     def get_acct_input_octets(self):
         try:return tools.DecodeInteger(self.get(42)[0]) or 0
@@ -462,7 +466,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
 
     def get_acct_sessionid(self):
         try:return tools.DecodeString(self.get(44)[0])
-        except:return None                                                         
+        except:return ''                                                         
 
     def get_acct_sessiontime(self):
         try:return tools.DecodeInteger(self.get(46)[0]) or 0
@@ -504,7 +508,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
         try:
             return tools.DecodeDate(self.get(55)[0])
         except:
-            return None
+            return 0
 
     def get_event_timestamp_str(self,timetype=0):
         try:
@@ -514,7 +518,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
             else:
                 return datetime.datetime.fromtimestamp(_time-(8*3600)).strftime("%Y-%m-%d %H:%M:%S")
         except:
-            return None
+            return ''
 
     def get_nas_port_type(self):
         try:return tools.DecodeInteger(self.get(61)[0]) or 0
@@ -522,7 +526,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
 
     def get_nas_portid(self):
         try:return tools.DecodeString(self.get(87)[0])
-        except:return None    
+        except:return ''    
 
     def get_ticket(self):
         return dict(
