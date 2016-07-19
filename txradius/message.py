@@ -128,7 +128,7 @@ class ExtAttrMixin:
 class CoAMessage(CoAPacket,ExtAttrMixin):
     def __init__(self, code=CoARequest, id=None, secret=six.b(''),
             authenticator=None, **attributes):
-        CoAPacket.__init__(self, code, id, secret, authenticator, **attributes)
+        CoAPacket.__init__(self, code, id, six.b(secret), authenticator, **attributes)
         ExtAttrMixin.__init__(self)
         
     def format_str(self):
@@ -153,7 +153,7 @@ class CoAMessage(CoAPacket,ExtAttrMixin):
 class AuthMessage(AuthPacket,ExtAttrMixin):
 
     def __init__(self, code=AccessRequest, id=None, secret=six.b(''), authenticator=None, **attributes):
-        AuthPacket.__init__(self, code, id, secret, authenticator, **attributes)
+        AuthPacket.__init__(self, code, id, six.b(secret), authenticator, **attributes)
         ExtAttrMixin.__init__(self)
 
     def format_str(self):
@@ -375,7 +375,7 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
 class AcctMessage(AcctPacket,ExtAttrMixin):
     def __init__(self, code=AccountingRequest, id=None, secret=six.b(''),
             authenticator=None, **attributes):
-        AcctPacket.__init__(self, code, id, secret, authenticator, **attributes)
+        AcctPacket.__init__(self, code, id, six.b(secret), authenticator, **attributes)
         ExtAttrMixin.__init__(self)
 
     def format_str(self):
