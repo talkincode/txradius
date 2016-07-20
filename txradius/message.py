@@ -528,6 +528,10 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
         try:return tools.DecodeString(self.get(87)[0])
         except:return ''    
 
+    def get_acct_start_time(self):
+        dt = datetime.datetime.fromtimestamp(time.time()-self.get_acct_sessiontime())
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+
     def get_ticket(self):
         return dict(
             account_number = self.get_user_name(),
@@ -571,7 +575,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
             session_timeout = self.get_session_timeout(),
             acct_input_total = self.get_input_total(),
             acct_output_total = self.get_output_total(),
-            acct_start_time = self._created,
+            acct_start_time = self.get_acct_start_time(),
             acct_session_time = self.get_acct_sessiontime(),
             acct_input_packets = self.get_acct_input_packets(),
             acct_output_packets = self.get_acct_output_packets(),
