@@ -557,7 +557,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
         
     def get_billing(self):
         return dict(
-            nas_id = self.get_user_name(),
+            nas_id = self.get_nas_id(),
             acct_session_id = self.get_acct_sessionid(),
             username = self.get_user_name(),
             mac_addr = self.get_mac_addr(),
