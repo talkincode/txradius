@@ -205,7 +205,7 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
         
     def get_mac_addr(self):
         try:
-            return self.get_extattr(self.client_mac,tools.DecodeString(self.get(31)[0]).replace("-",":")) 
+            return self.client_mac or tools.DecodeString(self.get(31)[0]).replace("-",":")
         except:return None
 
     def get_user_name(self):
@@ -409,8 +409,8 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
 
     def get_mac_addr(self):
         try:
-            return self.client_mac
-        except:return ''
+            return self.client_mac or tools.DecodeString(self.get(31)[0]).replace("-",":")
+        except:return None
 
    
     def get_nas_id(self):
