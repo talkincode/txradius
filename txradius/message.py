@@ -576,5 +576,4 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
             acct_input_packets = self.get_acct_input_packets(),
             acct_output_packets = self.get_acct_output_packets(),
             acct_terminate_cause = self.get_acct_terminate_cause(),
-            event_timestamp = self.get_event_timestamp(),
         )
