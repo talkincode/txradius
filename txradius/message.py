@@ -555,7 +555,7 @@ class AcctMessage(AcctPacket,ExtAttrMixin):
             nas_port_id=self.get_nas_portid()
         )
         
-    def get_cdr_log(self):
+    def get_billing(self):
         return dict(
             nas_id = self.get_user_name(),
             acct_session_id = self.get_acct_sessionid(),
