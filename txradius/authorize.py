@@ -9,6 +9,20 @@ from txradius.radius import packet
 from txradius.ext import ikuai
 from txradius import message
 
+def get_coa_packet(vendor_id, raddict, nas_secret, nas_addr, coa_port=3799, **kwargs):
+    coa_request = message.CoAMessage(
+        code=packet.DisconnectRequest, 
+        dict=raddict, 
+        secret=six.b(str(nas_secret)), 
+        **kwargs
+    )
+    username = coa_request["User-Name"][0]
+    if self.vendor_id == ikuai.VENDOR_ID:
+        pkg = ikuai.create_dm_pkg(six.b(str(nas_secret)), username)
+        return (pkg,nas_addr,coa_port)
+    else:
+        return (coa_request.RequestPacket(),nas_addr,coa_port)
+
 
 class CoAClient(protocol.DatagramProtocol):
     
