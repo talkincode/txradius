@@ -21,7 +21,7 @@ def get_dm_packet(vendor_id, nas_secret, nas_addr, coa_port=3799, **kwargs):
         **kwargs
     )
     username = coa_request["User-Name"][0]
-    if self.vendor_id == ikuai.VENDOR_ID:
+    if int(vendor_id) == ikuai.VENDOR_ID:
         pkg = ikuai.create_dm_pkg(six.b(str(nas_secret)), username)
         return (pkg,nas_addr,coa_port)
     else:
