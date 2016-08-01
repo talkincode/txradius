@@ -11,7 +11,7 @@ from txradius import message
 from txradius.radius import dictionary
 import txradius
 
-RADIUS_DICT = dictionary.Dictionary(os.path.join(os.path.dirname(txradius.__file__), 'dictionarys/dictionary'))
+RADIUS_DICT = dictionary.Dictionary(os.path.join(os.path.dirname(txradius.__file__), 'dictionary/dictionary'))
 
 def get_dm_packet(vendor_id, nas_secret, nas_addr, coa_port=3799, **kwargs):
     coa_request = message.CoAMessage(
