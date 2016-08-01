@@ -8,12 +8,16 @@ from twisted.internet import reactor, defer
 from txradius.radius import packet
 from txradius.ext import ikuai
 from txradius import message
+from txradius.radius import dictionary
+import txradius
 
-def get_coa_packet(vendor_id, raddict, nas_secret, nas_addr, coa_port=3799, **kwargs):
+RADIUS_DICT = dictionary.Dictionary(os.path.join(os.path.dirname(txradius.__file__), 'dictionarys/dictionary'))
+
+def get_packet(vendor_id, nas_secret, nas_addr, coa_port=3799, **kwargs):
     coa_request = message.CoAMessage(
-        code=packet.DisconnectRequest, 
-        dict=raddict, 
-        secret=six.b(str(nas_secret)), 
+        code=packet.DisconnectRequest,
+        dict=RADIUS_DICT,
+        secret=six.b(str(nas_secret)),
         **kwargs
     )
     username = coa_request["User-Name"][0]
