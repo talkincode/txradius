@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #coding=utf-8
-
+import os
 import six
 from twisted.python import log
 from twisted.internet import protocol
