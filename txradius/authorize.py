@@ -13,7 +13,7 @@ import txradius
 
 RADIUS_DICT = dictionary.Dictionary(os.path.join(os.path.dirname(txradius.__file__), 'dictionarys/dictionary'))
 
-def get_packet(vendor_id, nas_secret, nas_addr, coa_port=3799, **kwargs):
+def get_dm_packet(vendor_id, nas_secret, nas_addr, coa_port=3799, **kwargs):
     coa_request = message.CoAMessage(
         code=packet.DisconnectRequest,
         dict=RADIUS_DICT,
