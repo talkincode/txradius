@@ -316,6 +316,7 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
 
     def is_valid_pwd(self,userpwd):
         pwd_type = self.get_pwd_type()
+        print "radius password type %s" % pwd_type
         try:
             if pwd_type == 'pap':
                 return userpwd == self.get_passwd()
