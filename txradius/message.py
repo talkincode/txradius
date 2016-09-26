@@ -202,6 +202,12 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
         try:
             return tools.DecodeAddress(self.get(4)[0])
         except:pass
+
+    def get_nas_portid(self):
+        try:
+            return tools.DecodeString(self.get(87)[0])
+        except:return ''    
+
         
     def get_mac_addr(self):
         try:

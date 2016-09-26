@@ -6,7 +6,7 @@ from collections import deque
 
 class MessageStat(dict):
 
-    def __init__(self):
+    def __init__(self,quemax=90):
         self.online = 0
         self.auth_req_old = 0
         self.auth_resp_old = 0
@@ -25,10 +25,10 @@ class MessageStat(dict):
         self.acct_resp = 0
         self.acct_retry = 0
         self.acct_drop = 0
-        self.auth_req_stat = deque([],90)
-        self.auth_resp_stat = deque([],90)
-        self.acct_req_stat = deque([],90)
-        self.acct_resp_stat = deque([],90)
+        self.auth_req_stat = deque([],quemax)
+        self.auth_resp_stat = deque([],quemax)
+        self.acct_req_stat = deque([],quemax)
+        self.acct_resp_stat = deque([],quemax)
         self.last_max_req = 0
         self.last_max_req_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.last_max_resp = 0
@@ -38,7 +38,7 @@ class MessageStat(dict):
         if hasattr(self, attr_name):
             setattr(self, attr_name, getattr(self,attr_name) + incr)
         
-    def run_stat(self):
+    def run_stat(self,delay=10.0):
         _time = time.time()*1000
         _auth_req_stat = self.auth_req - self.auth_req_old
         self.auth_req_old = self.auth_req
@@ -57,12 +57,12 @@ class MessageStat(dict):
         self.acct_req_stat.append((_time,_acct_req_stat))
         self.acct_resp_stat.append((_time,_acct_resp_stat))
 
-        req_percount = int((_auth_req_stat+_acct_req_stat)/10.0)
+        req_percount = int((_auth_req_stat+_acct_req_stat)/delay)
         if self.last_max_req < req_percount:
             self.last_max_req = req_percount
             self.last_max_req_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        resp_percount = int((_auth_resp_stat+_acct_resp_stat)/10.0)
+        resp_percount = int((_auth_resp_stat+_acct_resp_stat)/delay)
         if self.last_max_resp < resp_percount:
             self.last_max_resp = resp_percount
             self.last_max_resp_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
