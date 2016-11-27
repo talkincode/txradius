@@ -48,7 +48,6 @@ def cli(conf):
             reactor.stop()
             sys.exit(0)
         else:
-            reactor.stop()
             sys.exit(1)
 
     def onerr(e):
