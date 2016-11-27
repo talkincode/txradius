@@ -40,7 +40,7 @@ def cli(conf):
     req["NAS-Identifier"]     = nas_id
     req["Called-Station-Id"]  = '00:00:00:00:00:00'
     req["Calling-Station-Id"] = '00:00:00:00:00:00'
-    req["Framed-IP-Address"]  = os.environ.get('ifconfig_pool_remote_ip')
+    # req["Framed-IP-Address"]  = os.environ.get('ifconfig_pool_remote_ip')
     log.msg("radius auth: %s" % repr(req))
 
     def onresp(r):
