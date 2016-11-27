@@ -221,6 +221,15 @@ class AuthMessage(AuthPacket,ExtAttrMixin):
         except:
             return None
 
+    def get_session_timeout(self):
+        try:return tools.DecodeInteger(self.get(27)[0]) or 0
+        except:return 0    
+
+    def get_acct_interim_interval(self):
+        try:return tools.DecodeInteger(self.get(85)[0]) or 0
+        except:return 0    
+
+
     def get_domain(self):
         try:
             user_name = tools.DecodeString(self.get(1)[0])

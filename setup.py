@@ -51,6 +51,9 @@ setup(name='txradius',
               'txovpn_connect = txradius.openvpn.client_connect:cli',
               'txovpn_disconnect = txradius.openvpn.client_disconnect:cli',
               'txovpn_config = txradius.openvpn.setup_config:echo',
+              'txovpn_initdb = txradius.openvpn.statusdb:cli',
+              'txovpn_list = txradius.openvpn.statusdb:list',
+              'txovpn_daemon = txradius.openvpn.daemon:main',
           ]
       }
 )

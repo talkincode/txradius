@@ -9,6 +9,7 @@ radius_addr=127.0.0.1
 radius_auth_port=18121
 radius_acct_port=18131
 radius_secret=secret
+radius_timeout=3
 logfile=/var/log/txovpn.log
 statusfile=/etc/openvpn/openvpn-status.log
 statusdb=/etc/openvpn/txovpn.db

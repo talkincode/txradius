@@ -10,27 +10,38 @@ from txradius.openvpn import get_challenge
 from txradius.openvpn import get_dictionary
 from txradius.openvpn import readconfig
 from txradius import message, client
+from txradius.openvpn import statusdb
+from hashlib import md5
 import traceback
 import click
 
 @click.command()
 @click.option('-c','--conf', default=CONFIG_FILE, help='txovpn config file')
-@click.option('-d','--debug', is_flag=True)
-def cli(conf,debug):
+def cli(conf):
     """ OpenVPN client_disconnect method
     """
     config = readconfig(conf)
+    debug = config.getboolean('DEFAULT', 'debug')
     if debug:
         log.startLogging(sys.stdout)
     else:
         log.startLogging(DailyLogFile.fromFullPath(config.get("DEFAULT",'logfile')))
+
     nas_id = config.get('DEFAULT', 'nas_id')
-    secret = config.get('DEFAULT', 'secret')
+    secret = config.get('DEFAULT', 'radius_secret')
     nas_addr = config.get('DEFAULT', 'nas_addr')
     radius_addr = config.get('DEFAULT', 'radius_addr')
-    radius_acct_port = config.get('DEFAULT', 'radius_acct_port')
-    session_id = 0
-    req = {'User-Name':os.environ.get('username')}
+    radius_acct_port = config.getint('DEFAULT', 'radius_acct_port')
+    radius_timeout = config.getint('DEFAULT', 'radius_timeout')
+    status_dbfile = config.get('DEFAULT', 'statusdb')
+
+    username = os.environ.get('username')
+    userip = os.environ.get('ifconfig_pool_remote_ip')
+    realip = os.environ.get('trusted_ip')
+    realport = os.environ.get('trusted_port')
+    session_id = md5(nas_addr + realip + realport).hexdigest()
+
+    req = {'User-Name':username}
     req['Acct-Status-Type'] = ACCT_STOP
     req['Acct-Session-Id'] = session_id
     req["Acct-Output-Octets"]  =  0
@@ -43,11 +54,15 @@ def cli(conf,debug):
     req["NAS-Identifier"]     = nas_id
     req["Called-Station-Id"]  = '00:00:00:00:00:00'
     req["Calling-Station-Id"] = '00:00:00:00:00:00'
-    req["Framed-IP-Address"]  = os.environ.get('ifconfig_pool_remote_ip')
-    log.msg("radius acct: %s" % repr(req))
-
+    req["Framed-IP-Address"]  = userip
+ 
     def onresp(r):
-        log.msg(message.format_packet_str(r))
+        try:
+            statusdb.del_client(status_dbfile,session_id)
+            log.msg('delete online<%s> client from db'%session_id)
+        except Exception as e:
+            log.err('del client online error')
+            log.err(e)        
         reactor.stop()
         sys.exit(0)
 
@@ -59,6 +74,7 @@ def cli(conf,debug):
     d = client.send_acct(str(secret), get_dictionary(), radius_addr, 
         acctport=radius_acct_port, debug=True,**req)
     d.addCallbacks(onresp,onerr)
+    reactor.callLater(radius_timeout,reactor.stop)
     reactor.run()    
 
 

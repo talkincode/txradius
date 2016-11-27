@@ -15,11 +15,11 @@ import click
 
 @click.command()
 @click.option('-c','--conf', default=CONFIG_FILE, help='txovpn config file')
-@click.option('-d','--debug', is_flag=True)
-def cli(conf,debug):
+def cli(conf):
     """ OpenVPN user_pass_verify method
     """
     config = readconfig(conf)
+    debug = config.getboolean('DEFAULT', 'debug')
     if debug:
         log.startLogging(sys.stdout)
     else:
@@ -28,7 +28,7 @@ def cli(conf,debug):
     nas_addr = config.get('DEFAULT', 'nas_addr')
     secret = config.get('DEFAULT', 'radius_secret')
     radius_addr = config.get('DEFAULT', 'radius_addr')
-    radius_auth_port = config.get('DEFAULT', 'radius_auth_port')
+    radius_auth_port = config.getint('DEFAULT', 'radius_auth_port')
 
     req = {'User-Name':os.environ.get('username')}
     req['CHAP-Challenge'] = get_challenge()
@@ -44,9 +44,12 @@ def cli(conf,debug):
     log.msg("radius auth: %s" % repr(req))
 
     def onresp(r):
-        log.msg(message.format_packet_str(r))
-        reactor.stop()
-        sys.exit(0)
+        if r.code == packet.AccessAccept:
+            reactor.stop()
+            sys.exit(0)
+        else:
+            reactor.stop()
+            sys.exit(1)
 
     def onerr(e):
         log.err(e)
