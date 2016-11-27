@@ -47,7 +47,10 @@ setup(name='txradius',
       entry_points={
           'console_scripts': [
               'radtest = txradius.radtest:cli',
-              'txovpn = txradius.txovpn:cli',
+              'txovpn_auth = txradius.openvpn.user_pass_verify:cli',
+              'txovpn_connect = txradius.openvpn.client_connect:cli',
+              'txovpn_disconnect = txradius.openvpn.client_disconnect:cli',
+              'txovpn_config = txradius.openvpn.setup_config:echo',
           ]
       }
 )
