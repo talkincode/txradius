@@ -20,7 +20,10 @@ def cli(conf,debug):
     """ OpenVPN client_connect method
     """
     config = readconfig(conf)
-    log.startLogging(DailyLogFile.fromFullPath(config.get("DEFAULT",'logfile')))
+    if debug:
+        log.startLogging(sys.stdout)
+    else:
+        log.startLogging(DailyLogFile.fromFullPath(config.get("DEFAULT",'logfile')))
     nas_id = config.get('DEFAULT', 'nas_id')
     nas_addr = config.get('DEFAULT', 'nas_addr')
     secret = config.get('DEFAULT', 'radius_secret')
