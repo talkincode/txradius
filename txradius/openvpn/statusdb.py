@@ -148,7 +148,10 @@ def cli(conf):
             inbytes int, outbytes int, 
             acct_interval int, session_timeout int, uptime int)
         '''
-        cur.execute('drop table client_status')
+        try:
+            cur.execute('drop table client_status')
+        except:
+            pass
         cur.execute(sqlstr)
         conn.commit()
         conn.close()
