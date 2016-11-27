@@ -15,6 +15,7 @@ install_requires_empty = []
 
 package_data={
     'txradius': [
+        'dictionary/ovpn_dictionary'
         'dictionary/*'
     ]
 }
@@ -45,7 +46,8 @@ setup(name='txradius',
       install_requires=install_requires,
       entry_points={
           'console_scripts': [
-              'radtest = txradius.radtest:cli'
+              'radtest = txradius.radtest:cli',
+              'txovpn = txradius.txovpn:cli',
           ]
       }
 )

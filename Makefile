@@ -1,6 +1,9 @@
 build:
 	python setup.py sdist
 
+install:
+	python setup.py install
+
 register:
 	python setup.py register
 
