@@ -1,5 +1,5 @@
 build:
-	python setup.py sdist
+	python setup.py sdist bdist_wheel
 
 install:
 	python setup.py install
