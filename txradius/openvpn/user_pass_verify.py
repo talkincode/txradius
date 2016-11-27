@@ -46,14 +46,15 @@ def cli(conf):
     def onresp(r):
         if r.code == packet.AccessAccept:
             reactor.stop()
-            sys.exit(0)
         else:
-            sys.exit(1)
+            reactor.addSystemEventTrigger('after', 'shutdown', sys.exit,1)
+            reactor.stop()
+
 
     def onerr(e):
         log.err(e)
+        reactor.addSystemEventTrigger('after', 'shutdown', sys.exit,1)
         reactor.stop()
-        sys.exit(1)
 
     d = client.send_auth(str(secret), 
         get_dictionary(), radius_addr, authport=radius_auth_port, debug=True,**req)

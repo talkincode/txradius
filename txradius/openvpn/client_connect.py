@@ -89,12 +89,11 @@ def cli(conf):
             log.err('add client online error')
             log.err(e)
         reactor.stop()
-        sys.exit(0)
 
     def onerr(e):
         log.err(e)
+        reactor.addSystemEventTrigger('after', 'shutdown', sys.exit,1)
         reactor.stop()
-        sys.exit(1)
 
     d = client.send_acct(str(secret), get_dictionary(), radius_addr, 
         acctport=radius_acct_port, debug=True,**req)
