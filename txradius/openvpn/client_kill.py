@@ -12,7 +12,7 @@ def cli(server,port,client):
     """ OpenVPN client_kill method
     """
     tn = telnetlib.Telnet(host=server,port=port)
-    tn.write('kill %s\n'%client)
+    tn.write('kill %s\n'%client.encode('utf-8'))
     tn.write('exit\n')
     os._exit(0)
 
