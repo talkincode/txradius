@@ -148,6 +148,7 @@ def accounting(dbfile,config):
 
 
 class Authorized(protocol.DatagramProtocol):
+    
     def __init__(self, config):
         self.config = config
         self.dictionary = get_dictionary()
@@ -156,19 +157,26 @@ class Authorized(protocol.DatagramProtocol):
         self.server_manage_addr = config.get('DEFAULT', 'server_manage_addr')
         self.status_dbfile = config.get('DEFAULT', 'statusdb')
 
+    def get_killexe(self):
+        if os.path.exists('/usr/bin/txovpn_kill'):
+            return '/usr/bin/txovpn_kill'
+        elif os.path.exists('/usr/local/bin/txovpn_kill'):
+            return '/usr/local/bin/txovpn_kill'
+
     def processPacket(self, coareq, (host,port)):
-        def coaresp():
+        def coaresp(session):
             reply = coareq.CreateReply()
             reply.code = packet.DisconnectACK
             log.msg("[RADIUSAuthorize] :: Send Authorize radius response: %s" % (message.format_packet_str(reply)))
             self.transport.write(reply.ReplyPacket(),  (host, port))
+            statusdb.del_client(self.status_dbfile, session.get('session_id'))
 
         saddr,sport = self.server_manage_addr.split(':')
         session = statusdb.get_client(self.status_dbfile,coareq.get_acct_sessionid())
         if session:
             clientstr = '{0}:{1}'.format(session['realip'],session['realport'])
-            d = txutils.getProcessOutput("txovpn_kill -s {0} -p {1} -c {2}".format(saddr,sport,clientstr))
-            d.addCallback(coaresp)
+            d = txutils.getProcessOutput("{0} -s {1} -p {2} -c {3}".format(self.get_killexe(),saddr,sport,clientstr))
+            d.addCallback(coaresp,session)
             d.addErrback(log.err)
         else:
             reply.code = packet.DisconnectNAK
