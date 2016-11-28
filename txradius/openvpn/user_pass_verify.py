@@ -29,6 +29,7 @@ def cli(conf):
     secret = config.get('DEFAULT', 'radius_secret')
     radius_addr = config.get('DEFAULT', 'radius_addr')
     radius_auth_port = config.getint('DEFAULT', 'radius_auth_port')
+    radius_timeout = config.getint('DEFAULT', 'radius_timeout')
 
     req = {'User-Name':os.environ.get('username')}
     req['CHAP-Challenge'] = get_challenge()
@@ -41,24 +42,26 @@ def cli(conf):
     req["Called-Station-Id"]  = '00:00:00:00:00:00'
     req["Calling-Station-Id"] = '00:00:00:00:00:00'
     # req["Framed-IP-Address"]  = os.environ.get('ifconfig_pool_remote_ip')
-    log.msg("radius auth: %s" % repr(req))
+    # log.msg("radius auth: %s" % repr(req))
+
+    def shutdown(exitcode=0):
+        reactor.addSystemEventTrigger('after', 'shutdown', os._exit,exitcode)
+        reactor.stop()
 
     def onresp(r):
         if r.code == packet.AccessAccept:
-            reactor.stop()
+            shutdown(0)
         else:
-            reactor.addSystemEventTrigger('after', 'shutdown', sys.exit,1)
-            reactor.stop()
-
-
+            shutdown(1)
+            
     def onerr(e):
         log.err(e)
-        reactor.addSystemEventTrigger('after', 'shutdown', sys.exit,1)
-        reactor.stop()
+        shutdown(1)
 
     d = client.send_auth(str(secret), 
         get_dictionary(), radius_addr, authport=radius_auth_port, debug=True,**req)
     d.addCallbacks(onresp,onerr)
+    reactor.callLater(radius_timeout,shutdown,1)
     reactor.run()    
 
 

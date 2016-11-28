@@ -82,23 +82,26 @@ def cli(conf):
         statusdb.add_client(status_dbfile,client)
         log.msg('add new online<%s> client to db'%session_id)
 
+    def shutdown(exitcode=0):
+        reactor.addSystemEventTrigger('after', 'shutdown', os._exit,exitcode)
+        reactor.stop()
+
     def onresp(r):
         try:
             addonline(r)
         except Exception as e:
             log.err('add client online error')
             log.err(e)
-        reactor.stop()
+        shutdown(0)
 
     def onerr(e):
         log.err(e)
-        reactor.addSystemEventTrigger('after', 'shutdown', sys.exit,1)
-        reactor.stop()
+        shutdown(1)
 
     d = client.send_acct(str(secret), get_dictionary(), radius_addr, 
         acctport=radius_acct_port, debug=True,**req)
     d.addCallbacks(onresp,onerr)
-    reactor.callLater(radius_timeout,reactor.stop)
+    reactor.callLater(radius_timeout,shutdown,1)
     reactor.run()    
 
 
