@@ -39,7 +39,7 @@ setup(name='txradius',
        ],
       packages=find_packages(),
       package_data=package_data,
-      keywords=['radius', 'AAA','authentication','accounting','authorization','toughradius'],
+      keywords=['radius', 'AAA','authentication','accounting','authorization','toughradius','openvpn'],
       zip_safe=True,
       include_package_data=True,
       eager_resources=['txradius'],
@@ -54,6 +54,7 @@ setup(name='txradius',
               'txovpn_initdb = txradius.openvpn.statusdb:cli',
               'txovpn_list = txradius.openvpn.statusdb:list',
               'txovpn_daemon = txradius.openvpn.daemon:main',
+              'txovpn_kill = txradius.openvpn.client_kill:cli',
           ]
       }
 )

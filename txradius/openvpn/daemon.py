@@ -2,20 +2,21 @@
 # -*- coding: utf-8 -*-
 import sys,os
 from twisted.python import log
-from twisted.internet import reactor, defer
-from twisted.python.logfile import DailyLogFile
+from twisted.internet import reactor, defer,protocol
 from twisted.internet.threads import deferToThread
+from twisted.internet import utils as txutils
 from txradius.radius import dictionary,packet
 from txradius.openvpn import CONFIG_FILE,ACCT_UPDATE
 from txradius.openvpn import get_challenge
 from txradius.openvpn import get_dictionary
-from txradius.openvpn import readconfig
+from txradius.openvpn import init_config
 from txradius.openvpn import statusdb
 from txradius import message, client
 from hashlib import md5
 import traceback
 import click
 import time
+import six
 
 def parse_status_file(status_file,nas_addr):
     ''' parse openvpn status log
@@ -146,6 +147,54 @@ def accounting(dbfile,config):
         log.err(e)
 
 
+class Authorized(protocol.DatagramProtocol):
+
+    def __init__(self, config):
+        self.config = config
+        self.dictionary = get_dictionary()
+        self.radius_addr = config.get('DEFAULT', 'radius_addr')
+        self.secret = config.get('DEFAULT', 'radius_secret')
+        self.server_manage_addr = config.get('DEFAULT', 'server_manage_addr')
+        self.status_dbfile = config.get('DEFAULT', 'statusdb')
+
+    def get_killexe(self):
+        if os.path.exists('/usr/bin/txovpn_kill'):
+            return '/usr/bin/txovpn_kill'
+        elif os.path.exists('/usr/local/bin/txovpn_kill'):
+            return '/usr/local/bin/txovpn_kill'
+
+    def processPacket(self, coareq, (host,port)):
+        def coaresp(session):
+            reply = coareq.CreateReply()
+            reply.code = packet.DisconnectACK
+            log.msg("[RADIUSAuthorize] :: Send Authorize radius response: %s" % (message.format_packet_str(reply)))
+            self.transport.write(reply.ReplyPacket(),  (host, port))
+            statusdb.del_client(self.status_dbfile, session.get('session_id'))
+
+        saddr,sport = self.server_manage_addr.split(':')
+        session = statusdb.get_client(self.status_dbfile,coareq.get_acct_sessionid())
+        if session:
+            clientstr = '{0}:{1}'.format(session['realip'],session['realport'])
+            d = txutils.getProcessOutput(self.get_killexe(),args=('-s',saddr,'-p',sport,'-c',clientstr))
+            d.addCallback(coaresp,session)
+            d.addErrback(log.err)
+        else:
+            reply.code = packet.DisconnectNAK
+            self.transport.write(reply.ReplyPacket(),  (host, port))
+
+
+    def datagramReceived(self, datagram, (host, port)):
+        try:
+            if host not in self.radius_addr:
+                log.err('[RADIUSAuthorize] :: Dropping Authorize packet from unknown host ' + host)
+                return
+            coa_req = message.CoAMessage(packet=datagram, dict=self.dictionary, secret=six.b(self.secret))
+            log.msg("[RADIUSAuthorize] :: Received Authorize radius request : %s"%message.format_packet_str(coa_req))
+            self.processPacket(coa_req,  (host, port))
+        except Exception as err:
+            log.err('RadiusError:Dropping invalid packet from {0} {1}'.format(host, port))
+            log.err(err)
+
 
 
 @click.command()
@@ -153,16 +202,11 @@ def accounting(dbfile,config):
 def main(conf):
     """ OpenVPN status daemon 
     """
-    config = readconfig(conf)
-    debug = config.getboolean('DEFAULT', 'debug')
-    if debug:
-        log.startLogging(sys.stdout)
-    else:
-        log.startLogging(DailyLogFile.fromFullPath(config.get("DEFAULT",'logfile')))
-
+    config = init_config(conf)
     nas_addr = config.get('DEFAULT', 'nas_addr')
     status_file = config.get('DEFAULT', 'statusfile')
     status_dbfile = config.get('DEFAULT', 'statusdb')
+    nas_coa_port = config.get('DEFAULT', 'nas_coa_port')
 
     def do_update_status_task(): 
         d = deferToThread(update_status, status_dbfile, status_file, nas_addr)
@@ -178,6 +222,9 @@ def main(conf):
 
     do_update_status_task()
     do_accounting_task()
+
+    coa_protocol = Authorized(config)
+    reactor.listenUDP(int(nas_coa_port), coa_protocol, interface='0.0.0.0')
     reactor.run()    
 
 

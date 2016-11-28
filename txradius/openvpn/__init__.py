@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import sys
 import random
 import time
-from decimal import Decimal
-from txradius.radius import dictionary
-from txradius import client
 import ConfigParser
+from decimal import Decimal
+from txradius import client
+from txradius.radius import dictionary
+from twisted.python import log
+from twisted.python.logfile import DailyLogFile
 
 CONFIG_FILE = '/etc/openvpn/txovpn.conf'
 DICTIONARY_FILE = os.path.join(os.path.dirname(client.__file__), "dictionary/ovpn_dictionary")
@@ -34,11 +37,18 @@ __defconfig__ = dict(
     statusfile='/etc/openvpn/openvpn-status.log',
     statusdb='/etc/openvpn/txovpn.db',
     client_config_dir="/etc/openvpn/ccd",
+    server_manage_addr="127.0.0.1:7505",
     debug="true",
 )
 
-def readconfig(cfgfile):
+def init_config(cfgfile):
     config = ConfigParser.SafeConfigParser(__defconfig__)
     config.read(cfgfile)
+    if config.getboolean('DEFAULT', 'debug'):
+        log.startLogging(sys.stdout)
+    else:
+        log.startLogging(DailyLogFile.fromFullPath(config.get("DEFAULT",'logfile')))    
     return config
+
+
 

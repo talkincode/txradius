@@ -5,7 +5,7 @@ import click
 import sqlite3
 import traceback
 from txradius.openvpn import CONFIG_FILE
-from txradius.openvpn import readconfig
+from txradius.openvpn import init_config
 
 def dict_factory(cursor, row):
     d = {}
@@ -100,6 +100,19 @@ def query_client(dbfile):
     except Exception, e:
         traceback.print_exc()
 
+def get_client(dbfile,session_id):
+    try:
+        conn = get_conn(dbfile)
+        cur = conn.cursor()
+        sqlstr = '''select * from client_status where session_id=:session_id '''
+        cur.execute(sqlstr,dict(session_id=session_id))
+        result = cur.fetchone()
+        conn.commit()
+        conn.close()
+        return result
+    except Exception, e:
+        traceback.print_exc()
+
 
 def del_client(dbfile,session_id):
     try:
@@ -118,7 +131,7 @@ def list(conf):
     """ OpenVPN status list method
     """
     try:
-        config = readconfig(conf)
+        config = init_config(conf)
         conn = get_conn(config.get('DEFAULT','statusdb'))
         cur = conn.cursor()
         sqlstr = '''select * from client_status order by ctime desc '''
@@ -138,7 +151,7 @@ def cli(conf):
     """ OpenVPN status initdb method
     """
     try:
-        config = readconfig(conf)
+        config = init_config(conf)
         debug = config.getboolean('DEFAULT', 'debug')
         conn = get_conn(config.get('DEFAULT','statusdb'))
         cur = conn.cursor()
