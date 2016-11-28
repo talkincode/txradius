@@ -153,6 +153,7 @@ def cli(conf):
         except:
             pass
         cur.execute(sqlstr)
+        print 'flush client status database'
         conn.commit()
         conn.close()
     except:

@@ -33,6 +33,7 @@ __defconfig__ = dict(
     logfile='/var/log/txovpn.log',
     statusfile='/etc/openvpn/openvpn-status.log',
     statusdb='/etc/openvpn/txovpn.db',
+    client_config_dir="/etc/openvpn/ccd",
     debug="true",
 )
 
@@ -40,7 +41,4 @@ def readconfig(cfgfile):
     config = ConfigParser.SafeConfigParser(__defconfig__)
     config.read(cfgfile)
     return config
-
-
-
 
