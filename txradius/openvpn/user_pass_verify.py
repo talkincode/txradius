@@ -3,12 +3,11 @@
 import sys,os
 from twisted.python import log
 from twisted.internet import reactor, defer
-from twisted.python.logfile import DailyLogFile
 from txradius.radius import dictionary,packet,tools
 from txradius.openvpn import CONFIG_FILE
 from txradius.openvpn import get_challenge
 from txradius.openvpn import get_dictionary
-from txradius.openvpn import readconfig
+from txradius.openvpn import init_config
 from txradius import message, client
 import traceback
 import click
@@ -25,12 +24,7 @@ def get_radius_addr_attr(r,code,defval=None):
 def cli(conf):
     """ OpenVPN user_pass_verify method
     """
-    config = readconfig(conf)
-    debug = config.getboolean('DEFAULT', 'debug')
-    if debug:
-        log.startLogging(sys.stdout)
-    else:
-        log.startLogging(DailyLogFile.fromFullPath(config.get("DEFAULT",'logfile')))
+    config = init_config(conf)
     nas_id = config.get('DEFAULT', 'nas_id')
     nas_addr = config.get('DEFAULT', 'nas_addr')
     secret = config.get('DEFAULT', 'radius_secret')
