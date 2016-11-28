@@ -55,5 +55,4 @@ docs/_build/
 
 # PyBuilder
 target/
-test.sh
 fabfile.py
