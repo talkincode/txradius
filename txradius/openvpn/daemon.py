@@ -148,7 +148,7 @@ def accounting(dbfile,config):
 
 
 class Authorized(protocol.DatagramProtocol):
-    
+
     def __init__(self, config):
         self.config = config
         self.dictionary = get_dictionary()
@@ -175,7 +175,7 @@ class Authorized(protocol.DatagramProtocol):
         session = statusdb.get_client(self.status_dbfile,coareq.get_acct_sessionid())
         if session:
             clientstr = '{0}:{1}'.format(session['realip'],session['realport'])
-            d = txutils.getProcessOutput("{0} -s {1} -p {2} -c {3}".format(self.get_killexe(),saddr,sport,clientstr))
+            d = txutils.getProcessOutput(self.get_killexe(),args=('-s',saddr,'-p',sport,'-c',clientstr))
             d.addCallback(coaresp,session)
             d.addErrback(log.err)
         else:
