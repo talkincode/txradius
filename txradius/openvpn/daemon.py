@@ -3,8 +3,8 @@
 import sys,os
 from twisted.python import log
 from twisted.internet import reactor, defer,protocol
-from twisted.python.logfile import DailyLogFile
 from twisted.internet.threads import deferToThread
+from twisted.internet import utils as txutils
 from txradius.radius import dictionary,packet
 from txradius.openvpn import CONFIG_FILE,ACCT_UPDATE
 from txradius.openvpn import get_challenge
@@ -16,6 +16,7 @@ from hashlib import md5
 import traceback
 import click
 import time
+import six
 
 def parse_status_file(status_file,nas_addr):
     ''' parse openvpn status log
@@ -152,11 +153,27 @@ class Authorized(protocol.DatagramProtocol):
         self.dictionary = get_dictionary()
         self.radius_addr = config.get('DEFAULT', 'radius_addr')
         self.secret = config.get('DEFAULT', 'radius_secret')
+        self.server_manage_addr = config.get('DEFAULT', 'server_manage_addr')
+        self.status_dbfile = config.get('DEFAULT', 'statusdb')
 
     def processPacket(self, coareq, (host,port)):
-        reply = coareq.CreateReply()
-        log.msg("[RADIUSAuthorize] :: Send Authorize radius response: %s" % (message.format_packet_str(reply)))
-        self.transport.write(reply.ReplyPacket(),  (host, port))
+        def coaresp():
+            reply = coareq.CreateReply()
+            reply.code = packet.DisconnectACK
+            log.msg("[RADIUSAuthorize] :: Send Authorize radius response: %s" % (message.format_packet_str(reply)))
+            self.transport.write(reply.ReplyPacket(),  (host, port))
+
+        saddr,sport = self.server_manage_addr.split(':')
+        session = statusdb.get_client(self.status_dbfile,coareq.get_acct_sessionid())
+        if session:
+            clientstr = '{0}:{1}'.format(session['realip'],session['realport'])
+            d = txutils.getProcessOutput("txovpn_kill -s {0} -p {1} -c {2}".format(saddr,sport,clientstr))
+            d.addCallback(coaresp)
+            d.addErrback(log.err)
+        else:
+            reply.code = packet.DisconnectNAK
+            self.transport.write(reply.ReplyPacket(),  (host, port))
+
 
     def datagramReceived(self, datagram, (host, port)):
         try:

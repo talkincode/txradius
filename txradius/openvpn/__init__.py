@@ -37,6 +37,7 @@ __defconfig__ = dict(
     statusfile='/etc/openvpn/openvpn-status.log',
     statusdb='/etc/openvpn/txovpn.db',
     client_config_dir="/etc/openvpn/ccd",
+    server_manage_addr="127.0.0.1:7505",
     debug="true",
 )
 

@@ -100,6 +100,19 @@ def query_client(dbfile):
     except Exception, e:
         traceback.print_exc()
 
+def get_client(dbfile,session_id):
+    try:
+        conn = get_conn(dbfile)
+        cur = conn.cursor()
+        sqlstr = '''select * from client_status where session_id=:session_id '''
+        cur.execute(sqlstr,dict(session_id=session_id))
+        result = cur.fetchone()
+        conn.commit()
+        conn.close()
+        return result
+    except Exception, e:
+        traceback.print_exc()
+
 
 def del_client(dbfile,session_id):
     try:

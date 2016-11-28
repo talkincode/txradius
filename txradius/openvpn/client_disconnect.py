@@ -3,7 +3,6 @@
 import sys,os
 from twisted.python import log
 from twisted.internet import reactor, defer
-from twisted.python.logfile import DailyLogFile
 from txradius.radius import dictionary,packet
 from txradius.openvpn import CONFIG_FILE,ACCT_STOP
 from txradius.openvpn import get_challenge
